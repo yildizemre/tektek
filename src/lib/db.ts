@@ -15,20 +15,28 @@ const SCHEMA_VERSION = 4;
 
 const DATA_DIR = path.join(process.cwd(), "data");
 
+function isServerless() {
+  return Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME);
+}
+
 function shouldUseTurso() {
   if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) return false;
+  if (process.env.USE_TURSO === "0") return false;
   if (process.env.USE_TURSO === "1") return true;
-  return process.env.NODE_ENV === "production";
+  return process.env.NODE_ENV === "production" || isServerless();
 }
 
 async function createDbClient(): Promise<Client> {
   if (shouldUseTurso()) {
-    // The web build talks HTTP only, so serverless deploys need no native binary.
     const { createClient } = await import("@libsql/client/web");
     return createClient({
       url: process.env.TURSO_DATABASE_URL!,
       authToken: process.env.TURSO_AUTH_TOKEN,
     });
+  }
+
+  if (isServerless() || process.env.NODE_ENV === "production") {
+    throw new Error("Netlify'de TURSO_DATABASE_URL ve TURSO_AUTH_TOKEN gerekli.");
   }
 
   const { createClient } = await import("@libsql/client");
@@ -49,6 +57,9 @@ export async function db(): Promise<Client> {
 
   globalThis.__storeDb ??= (async () => {
     const client = await createDbClient();
+
+    const ready = await client.execute("SELECT 1 AS ok FROM settings LIMIT 1").catch(() => null);
+    if (ready?.rows?.length) return client;
 
     if (typeof client.batch === "function") {
       await client.batch(

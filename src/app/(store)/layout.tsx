@@ -12,11 +12,11 @@ export const dynamic = "force-dynamic";
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const [categories, settings, links, slides, session] = await Promise.all([
-    getCategoryTree(),
-    getSettings(),
-    getMenuLinks(),
-    getSlides("footer"),
-    getSession(),
+    getCategoryTree().catch(() => []),
+    getSettings().catch(() => ({}) as Record<string, string>),
+    getMenuLinks().catch(() => []),
+    getSlides("footer").catch(() => []),
+    getSession().catch(() => null),
   ]);
 
   const announcements = (settings.announcements ?? "")

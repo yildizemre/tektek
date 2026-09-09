@@ -22,14 +22,14 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const [allCategories, settings, featured, newest, deals, reviews, faqs, campaigns] =
     await Promise.all([
-      getAllCategories(),
-      getSettings(),
-      getProducts({ featuredOnly: true, limit: 12 }),
-      getProducts({ sort: "newest", limit: 10 }),
-      getProducts({ sort: "popular", limit: 10 }),
-      getFeaturedReviews(),
-      getFaqs(),
-      getCampaigns(true),
+      getAllCategories().catch(() => []),
+      getSettings().catch(() => ({}) as Record<string, string>),
+      getProducts({ featuredOnly: true, limit: 12 }).catch(() => []),
+      getProducts({ sort: "newest", limit: 10 }).catch(() => []),
+      getProducts({ sort: "popular", limit: 10 }).catch(() => []),
+      getFeaturedReviews().catch(() => []),
+      getFaqs().catch(() => []),
+      getCampaigns(true).catch(() => []),
     ]);
 
   const styleFor = categoryStyles(allCategories);
