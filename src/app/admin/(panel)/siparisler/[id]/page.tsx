@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-import { deleteOrderAction, updateOrderStatusAction } from "@/app/admin/actions";
+import { deleteOrderAction, updateOrderAction } from "@/app/admin/actions";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { Media } from "@/components/media";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -106,26 +106,35 @@ export default async function AdminOrderDetailPage({
               <p className="rounded-2xl bg-red-50 px-3 py-2 text-xs text-red-600">{order.payment_error}</p>
             )}
 
-            <form action={updateOrderStatusAction} className="space-y-2 pt-2">
+            <form action={updateOrderAction} className="space-y-2 pt-2">
               <input type="hidden" name="id" value={order.id} />
-              <select
-                name="status"
-                defaultValue={order.status}
-                className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm outline-none focus:border-ink-900"
-              >
+              <select name="status" defaultValue={order.status} className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm">
                 {Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
+                  <option key={value} value={value}>{label}</option>
                 ))}
               </select>
-              <button
-                type="submit"
-                className="w-full rounded-full bg-ink-900 py-3 text-sm font-bold text-white transition hover:bg-brand-600"
-              >
-                Durumu güncelle
+              <select name="payment_status" defaultValue={order.payment_status} className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm">
+                {Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
+              <input name="carrier" defaultValue={order.carrier} placeholder="Kargo firması" className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm" />
+              <input name="tracking_number" defaultValue={order.tracking_number} placeholder="Takip no" className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm" />
+              <textarea name="admin_note" defaultValue={order.admin_note} placeholder="İç not" className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm" />
+              <button type="submit" className="w-full rounded-full bg-ink-900 py-3 text-sm font-bold text-white">
+                Siparişi güncelle
               </button>
             </form>
+            {order.phone && (
+              <a
+                href={`https://wa.me/${order.phone.replace(/\D/g, "").replace(/^0/, "90")}`}
+                target="_blank"
+                rel="noreferrer"
+                className="block rounded-full bg-[#25D366] py-3 text-center text-sm font-bold text-white"
+              >
+                WhatsApp ile yaz
+              </a>
+            )}
           </section>
 
           <section className="space-y-1 rounded-3xl border border-ink-100 bg-white p-6 text-sm">

@@ -5,6 +5,7 @@ import { useActionState, useState } from "react";
 import { AlertCircle, Loader2 } from "lucide-react";
 
 import { saveCategoryAction, type FormState } from "@/app/admin/actions";
+import { ImageUpload } from "@/components/admin/image-upload";
 import { CategoryIcon, ICON_KEYS } from "@/components/category-icon";
 import { ACCENT_KEYS, accentGradient } from "@/lib/palette";
 import type { Category } from "@/lib/types";
@@ -69,10 +70,9 @@ export function CategoryForm({
           <textarea name="description" rows={3} defaultValue={category?.description} className={FIELD} />
         </label>
 
-        <label className="block space-y-1.5">
-          <span className={LABEL}>Kapak görseli (URL)</span>
-          <input name="image_url" defaultValue={category?.image_url} placeholder="https://..." className={FIELD} />
-        </label>
+        <ImageUpload name="image_url" defaultValue={category?.image_url} label="Kategori görseli (anasayfa kartı)" />
+        <input name="seo_title" defaultValue={category?.seo_title} placeholder="SEO başlık" className={FIELD} />
+        <textarea name="seo_description" rows={2} defaultValue={category?.seo_description} placeholder="SEO açıklama" className={FIELD} />
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block space-y-1.5">
@@ -88,6 +88,15 @@ export function CategoryForm({
               className="size-4 accent-indigo-600"
             />
             Yayında
+          </label>
+          <label className="flex items-end gap-3 pb-3 text-sm font-medium">
+            <input
+              type="checkbox"
+              name="show_on_home"
+              defaultChecked={category ? category.show_on_home === 1 : true}
+              className="size-4 accent-indigo-600"
+            />
+            Anasayfada göster
           </label>
         </div>
       </section>

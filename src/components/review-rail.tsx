@@ -4,11 +4,11 @@ import type { Review } from "@/lib/types";
 
 import { Rail } from "./rail";
 
-export function ReviewRail({ reviews }: { reviews: Review[] }) {
+export function ReviewRail({ reviews, title }: { reviews: Review[]; title?: string }) {
   if (reviews.length === 0) return null;
 
   return (
-    <Rail title="Sizden Gelenler" itemClassName="w-72 sm:w-80">
+    <Rail title={title || "Sizden Gelenler"} itemClassName="w-72 sm:w-80">
       {reviews.map((review) => (
         <figure key={review.id} className="flex h-full flex-col gap-3 rounded-3xl bg-ink-50 p-5">
           <div className="flex items-center gap-3">

@@ -26,9 +26,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const category = await getCategoryBySlug(slug);
   if (!category) return { title: "Kategori bulunamadı" };
 
+  const description =
+    category.seo_description || category.description || `${category.name} kategorisindeki tüm ürünler.`;
+
   return {
-    title: category.name,
-    description: category.description || `${category.name} kategorisindeki tüm ürünler.`,
+    title: category.seo_title || category.name,
+    description,
+    alternates: { canonical: `/kategori/${category.slug}` },
+    openGraph: {
+      title: category.seo_title || category.name,
+      description,
+      url: `/kategori/${category.slug}`,
+      images: category.image_url ? [{ url: category.image_url, alt: category.name }] : undefined,
+    },
   };
 }
 

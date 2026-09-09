@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { Search } from "lucide-react";
 
 import { ProductCard } from "@/components/product-card";
 import { SortSelect } from "@/components/sort-select";
 import { categoryStyles } from "@/lib/palette";
 import { countProducts, getAllCategories, getProducts, type ProductFilter } from "@/lib/queries";
+import type { Category } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Arama" };
@@ -47,6 +49,10 @@ export default async function SearchPage({
         </form>
       </header>
 
+      {term && (
+        <CategoryHits categories={categories} term={term} />
+      )}
+
       <div className="flex items-center justify-between gap-4 border-y border-ink-100 py-3">
         <span className="text-sm text-ink-400">{total} ürün bulundu</span>
         <SortSelect />
@@ -63,6 +69,34 @@ export default async function SearchPage({
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function CategoryHits({ categories, term }: { categories: Category[]; term: string }) {
+  const needle = term.toLocaleLowerCase("tr");
+  const hits = categories.filter(
+    (category) =>
+      category.is_active === 1 &&
+      (category.name.toLocaleLowerCase("tr").includes(needle) ||
+        category.slug.toLocaleLowerCase("tr").includes(needle)),
+  );
+  if (hits.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-bold uppercase tracking-wide text-ink-400">Kategoriler</p>
+      <div className="flex flex-wrap gap-2">
+        {hits.map((category) => (
+          <Link
+            key={category.id}
+            href={`/kategori/${category.slug}`}
+            className="rounded-full border border-ink-200 px-4 py-2 text-sm font-semibold transition hover:bg-ink-900 hover:text-white"
+          >
+            {category.name}
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

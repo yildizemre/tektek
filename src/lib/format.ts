@@ -35,6 +35,16 @@ export function slugify(value: string): string {
     .slice(0, 80);
 }
 
+export function formatDateShort(value: string): string {
+  const date = new Date(value.includes("T") ? value : `${value.replace(" ", "T")}Z`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium" }).format(date);
+}
+
+export function formatNumber(value: number): string {
+  return new Intl.NumberFormat("tr-TR").format(Number(value ?? 0));
+}
+
 export function parseJsonArray(value: string | null | undefined): string[] {
   if (!value) return [];
   try {

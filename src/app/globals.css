@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+/* Admin-editable palette. The store layout injects overrides for these. */
+:root {
+  --c-primary: #4f46e5;
+  --c-primary-text: #ffffff;
+  --c-page-bg: #ffffff;
+  --c-text: #0b0d18;
+  --c-header-bg: #0b0d18;
+  --c-header-text: #ffffff;
+  --c-ann-bg: #facc15;
+  --c-ann-text: #111827;
+  --c-footer-bg: #f6f6f7;
+  --c-footer-text: #0b0d18;
+  --c-radius: 24px;
+}
+
 @theme {
   --color-ink-50: #f6f6f7;
   --color-ink-100: #e6e7ea;
@@ -21,9 +36,21 @@
   --color-brand-600: #4f46e5;
   --color-brand-700: #4338ca;
 
+  --color-primary: var(--c-primary);
+  --color-primary-fg: var(--c-primary-text);
+  --color-surface: var(--c-page-bg);
+  --color-content: var(--c-text);
+  --color-header: var(--c-header-bg);
+  --color-header-fg: var(--c-header-text);
+  --color-ann: var(--c-ann-bg);
+  --color-ann-fg: var(--c-ann-text);
+  --color-footer: var(--c-footer-bg);
+  --color-footer-fg: var(--c-footer-text);
+
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
 
   --radius-4xl: 2rem;
+  --radius-card: var(--c-radius);
 }
 
 html {
@@ -31,8 +58,8 @@ html {
 }
 
 body {
-  background: #ffffff;
-  color: var(--color-ink-900);
+  background: var(--c-page-bg);
+  color: var(--c-text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
@@ -52,7 +79,6 @@ body {
   }
 }
 
-/* Horizontal product rails */
 .no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -71,7 +97,16 @@ body {
 }
 
 .animate-marquee {
-  animation: marquee 32s linear infinite;
+  animation: marquee var(--marquee-duration, 32s) linear infinite;
+}
+
+.animate-marquee-slow {
+  animation: marquee 48s linear infinite;
+}
+
+.pause-on-hover:hover .animate-marquee,
+.pause-on-hover:hover .animate-marquee-slow {
+  animation-play-state: paused;
 }
 
 @keyframes fade-up {
@@ -87,4 +122,82 @@ body {
 
 .animate-fade-up {
   animation: fade-up 0.4s ease-out both;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Markdown output (product descriptions, static pages) */
+.rich-text {
+  line-height: 1.75;
+  color: var(--color-ink-500);
+  font-size: 0.95rem;
+}
+.rich-text > * + * {
+  margin-top: 1rem;
+}
+.rich-text h1,
+.rich-text h2,
+.rich-text h3 {
+  color: var(--c-text);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-top: 2rem;
+}
+.rich-text h1 {
+  font-size: 1.75rem;
+}
+.rich-text h2 {
+  font-size: 1.35rem;
+}
+.rich-text h3 {
+  font-size: 1.1rem;
+}
+.rich-text ul,
+.rich-text ol {
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+.rich-text ol {
+  list-style: decimal;
+}
+.rich-text li + li {
+  margin-top: 0.35rem;
+}
+.rich-text a {
+  color: var(--c-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.rich-text strong {
+  color: var(--c-text);
+  font-weight: 700;
+}
+.rich-text img {
+  border-radius: 1rem;
+  max-width: 100%;
+  height: auto;
+}
+.rich-text blockquote {
+  border-left: 3px solid var(--c-primary);
+  padding-left: 1rem;
+  color: var(--color-ink-400);
+}
+.rich-text table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+.rich-text th,
+.rich-text td {
+  border: 1px solid var(--color-ink-100);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.rich-text hr {
+  border: 0;
+  border-top: 1px solid var(--color-ink-100);
 }

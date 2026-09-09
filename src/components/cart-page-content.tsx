@@ -44,7 +44,7 @@ export function CartPageContent() {
 
         <div className="divide-y divide-ink-100 overflow-hidden rounded-3xl border border-ink-100">
           {lines.map((line) => (
-            <div key={line.productId} className="flex gap-4 p-4">
+            <div key={line.key} className="flex gap-4 p-4">
               <Link href={`/urun/${line.slug}`} className="size-24 shrink-0 overflow-hidden rounded-2xl">
                 <Media
                   src={line.image}
@@ -66,7 +66,7 @@ export function CartPageContent() {
                     <button
                       type="button"
                       aria-label="Azalt"
-                      onClick={() => setQuantity(line.productId, line.quantity - 1)}
+                      onClick={() => setQuantity(line.key, line.quantity - 1)}
                       className="rounded-full p-2 hover:bg-ink-50"
                     >
                       <Minus className="size-3.5" />
@@ -75,7 +75,7 @@ export function CartPageContent() {
                     <button
                       type="button"
                       aria-label="Artır"
-                      onClick={() => setQuantity(line.productId, line.quantity + 1)}
+                      onClick={() => setQuantity(line.key, line.quantity + 1)}
                       className="rounded-full p-2 hover:bg-ink-50"
                     >
                       <Plus className="size-3.5" />
@@ -87,7 +87,7 @@ export function CartPageContent() {
                     <button
                       type="button"
                       aria-label="Kaldır"
-                      onClick={() => remove(line.productId)}
+                      onClick={() => remove(line.key)}
                       className="rounded-full p-2 text-ink-300 hover:bg-red-50 hover:text-red-500"
                     >
                       <Trash2 className="size-4" />

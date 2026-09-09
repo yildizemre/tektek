@@ -4,11 +4,27 @@ import { createContext, useContext, useEffect, useMemo, useState, useSyncExterna
 
 import type { CartLine } from "@/lib/types";
 
-const STORAGE_KEY = "enteknoloji.cart.v1";
+const STORAGE_KEY = "tekteknoloji.cart.v2";
 
 type CartState = { lines: CartLine[]; ready: boolean };
 
 const EMPTY: CartState = { lines: [], ready: false };
+
+/** "Daha fazla al, az öde" indirimi sepette adet değiştikçe yeniden hesaplanır. */
+export function lineUnitPrice(line: CartLine): number {
+  const tier = (line.tiers ?? [])
+    .filter((item) => item.quantity <= line.quantity && item.discount_percent > 0)
+    .sort((a, b) => b.quantity - a.quantity)[0];
+
+  const price = tier ? line.price * (1 - tier.discount_percent / 100) : line.price;
+  return Math.round((price + Number.EPSILON) * 100) / 100;
+}
+
+export function lineTierDiscount(line: CartLine): number {
+  return (line.tiers ?? [])
+    .filter((item) => item.quantity <= line.quantity && item.discount_percent > 0)
+    .sort((a, b) => b.quantity - a.quantity)[0]?.discount_percent ?? 0;
+}
 
 /**
  * The basket lives in localStorage, which React treats as an external store.
@@ -41,7 +57,7 @@ const store = (() => {
     } catch {
       restored = [];
     }
-    state = { lines: restored, ready: true };
+    state = { lines: restored.filter((line) => line && line.key), ready: true };
   }
 
   return {
@@ -52,26 +68,24 @@ const store = (() => {
     getSnapshot: () => state,
     getServerSnapshot: () => EMPTY,
     add(line: Omit<CartLine, "quantity">, quantity: number) {
-      const existing = state.lines.find((item) => item.productId === line.productId);
+      const existing = state.lines.find((item) => item.key === line.key);
       setLines(
         existing
           ? state.lines.map((item) =>
-              item.productId === line.productId
-                ? { ...item, quantity: item.quantity + quantity }
-                : item,
+              item.key === line.key ? { ...item, ...line, quantity: item.quantity + quantity } : item,
             )
           : [...state.lines, { ...line, quantity }],
       );
     },
-    setQuantity(productId: number, quantity: number) {
+    setQuantity(key: string, quantity: number) {
       setLines(
         quantity <= 0
-          ? state.lines.filter((item) => item.productId !== productId)
-          : state.lines.map((item) => (item.productId === productId ? { ...item, quantity } : item)),
+          ? state.lines.filter((item) => item.key !== key)
+          : state.lines.map((item) => (item.key === key ? { ...item, quantity } : item)),
       );
     },
-    remove(productId: number) {
-      setLines(state.lines.filter((item) => item.productId !== productId));
+    remove(key: string) {
+      setLines(state.lines.filter((item) => item.key !== key));
     },
     clear() {
       setLines([]);
@@ -83,13 +97,14 @@ type CartContextValue = {
   lines: CartLine[];
   count: number;
   subtotal: number;
+  savings: number;
   ready: boolean;
   isOpen: boolean;
   openCart: () => void;
   closeCart: () => void;
   add: (line: Omit<CartLine, "quantity">, quantity?: number) => void;
-  setQuantity: (productId: number, quantity: number) => void;
-  remove: (productId: number) => void;
+  setQuantity: (key: string, quantity: number) => void;
+  remove: (key: string) => void;
   clear: () => void;
 };
 
@@ -116,7 +131,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       ready,
       isOpen,
       count: lines.reduce((sum, line) => sum + line.quantity, 0),
-      subtotal: lines.reduce((sum, line) => sum + line.price * line.quantity, 0),
+      subtotal: lines.reduce((sum, line) => sum + lineUnitPrice(line) * line.quantity, 0),
+      savings: lines.reduce(
+        (sum, line) =>
+          sum + Math.max(0, (line.listPrice || line.price) - lineUnitPrice(line)) * line.quantity,
+        0,
+      ),
       openCart: () => setIsOpen(true),
       closeCart: () => setIsOpen(false),
       add: (line, quantity = 1) => {

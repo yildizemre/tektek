@@ -14,7 +14,13 @@ import { Media } from "./media";
 const FIELD =
   "w-full rounded-2xl border border-ink-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-ink-900";
 
-export function CheckoutForm({ iyzicoEnabled }: { iyzicoEnabled: boolean }) {
+export function CheckoutForm({
+  iyzicoEnabled,
+  customer,
+}: {
+  iyzicoEnabled: boolean;
+  customer?: { name: string; email: string; phone: string; address: string; city: string; district: string };
+}) {
   const { lines, subtotal, ready, clear } = useCart();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -38,7 +44,12 @@ export function CheckoutForm({ iyzicoEnabled }: { iyzicoEnabled: boolean }) {
         zipCode: String(data.get("zipCode") ?? ""),
         note: String(data.get("note") ?? ""),
       },
-      items: lines.map((line) => ({ productId: line.productId, quantity: line.quantity })),
+      items: lines.map((line) => ({
+        productId: line.productId,
+        quantity: line.quantity,
+        variantId: line.variantId,
+      })),
+      couponCode: String(data.get("couponCode") ?? ""),
     };
 
     try {
@@ -100,9 +111,9 @@ export function CheckoutForm({ iyzicoEnabled }: { iyzicoEnabled: boolean }) {
         <section className="space-y-4 rounded-3xl border border-ink-100 p-6">
           <h2 className="text-sm font-bold uppercase tracking-wide text-ink-400">İletişim bilgileri</h2>
           <div className="grid gap-3 sm:grid-cols-2">
-            <input name="name" required placeholder="Ad Soyad *" className={FIELD} autoComplete="name" />
-            <input name="email" type="email" required placeholder="E-posta *" className={FIELD} autoComplete="email" />
-            <input name="phone" required placeholder="Telefon * (5xx xxx xx xx)" className={FIELD} autoComplete="tel" />
+            <input name="name" required defaultValue={customer?.name} placeholder="Ad Soyad *" className={FIELD} autoComplete="name" />
+            <input name="email" type="email" required defaultValue={customer?.email} placeholder="E-posta *" className={FIELD} autoComplete="email" />
+            <input name="phone" required defaultValue={customer?.phone} placeholder="Telefon * (5xx xxx xx xx)" className={FIELD} autoComplete="tel" />
             <input name="identityNumber" placeholder="TC Kimlik No (fatura için)" className={FIELD} inputMode="numeric" />
           </div>
         </section>
@@ -116,18 +127,20 @@ export function CheckoutForm({ iyzicoEnabled }: { iyzicoEnabled: boolean }) {
             placeholder="Mahalle, cadde, sokak, kapı no *"
             className={FIELD}
             autoComplete="street-address"
+            defaultValue={customer?.address}
           />
           <div className="grid gap-3 sm:grid-cols-3">
-            <select name="city" required defaultValue="" className={FIELD}>
+            <select name="city" required defaultValue={customer?.city || ""} className={FIELD}>
               <option value="" disabled>İl seçin *</option>
               {TR_CITIES.map((city) => (
                 <option key={city} value={city}>{city}</option>
               ))}
             </select>
-            <input name="district" placeholder="İlçe" className={FIELD} />
+            <input name="district" defaultValue={customer?.district} placeholder="İlçe" className={FIELD} />
             <input name="zipCode" placeholder="Posta kodu" className={FIELD} inputMode="numeric" />
           </div>
           <textarea name="note" rows={2} placeholder="Sipariş notu (opsiyonel)" className={FIELD} />
+          <input name="couponCode" placeholder="İndirim / referans kodu" className={FIELD} />
         </section>
 
         {!iyzicoEnabled && (
