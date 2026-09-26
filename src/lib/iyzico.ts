@@ -1,21 +1,19 @@
 import "server-only";
 
-import Iyzipay from "iyzipay";
+import { createHmac, randomBytes } from "node:crypto";
 
 import type { Order, OrderItem } from "./types";
 
 const SANDBOX_URI = "https://sandbox-api.iyzipay.com";
+const INIT_PATH = "/payment/iyzipos/checkoutform/initialize/auth/ecom";
+const RETRIEVE_PATH = "/payment/iyzipos/checkoutform/auth/ecom/detail";
 
 export function isIyzicoConfigured(): boolean {
   return Boolean(process.env.IYZICO_API_KEY && process.env.IYZICO_SECRET_KEY);
 }
 
-function client(): Iyzipay {
-  return new Iyzipay({
-    apiKey: process.env.IYZICO_API_KEY ?? "",
-    secretKey: process.env.IYZICO_SECRET_KEY ?? "",
-    uri: process.env.IYZICO_BASE_URL ?? SANDBOX_URI,
-  });
+function baseUrl() {
+  return (process.env.IYZICO_BASE_URL || SANDBOX_URI).replace(/\/$/, "");
 }
 
 function money(value: number): string {
@@ -26,6 +24,43 @@ function splitName(fullName: string) {
   const parts = fullName.trim().split(/\s+/);
   if (parts.length === 1) return { name: parts[0], surname: parts[0] };
   return { name: parts.slice(0, -1).join(" "), surname: parts.at(-1)! };
+}
+
+function authorization(path: string, body: string) {
+  const apiKey = process.env.IYZICO_API_KEY ?? "";
+  const secretKey = process.env.IYZICO_SECRET_KEY ?? "";
+  const randomKey = `${Date.now()}${randomBytes(8).toString("hex")}`;
+  const signature = createHmac("sha256", secretKey)
+    .update(randomKey + path + body)
+    .digest("hex");
+  const encoded = Buffer.from(`apiKey:${apiKey}&randomKey:${randomKey}&signature:${signature}`).toString(
+    "base64",
+  );
+
+  return {
+    Authorization: `IYZWSv2 ${encoded}`,
+    "x-iyzi-rnd": randomKey,
+    "Content-Type": "application/json",
+  };
+}
+
+async function postIyzico(path: string, payload: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const body = JSON.stringify(payload);
+
+  try {
+    const response = await fetch(`${baseUrl()}${path}`, {
+      method: "POST",
+      headers: authorization(path, body),
+      body,
+    });
+    const data = (await response.json()) as Record<string, unknown>;
+    return data;
+  } catch (error) {
+    return {
+      status: "failure",
+      errorMessage: error instanceof Error ? error.message : "iyzico bağlantı hatası",
+    };
+  }
 }
 
 export type CheckoutInitResult =
@@ -57,8 +92,8 @@ export async function initCheckoutForm(
     });
   }
 
-  // iyzico rejects the request unless `price` equals the sum of the basket items.
   const basketTotal = basketItems.reduce((sum, item) => sum + Number(item.price), 0);
+  const paidTotal = Math.max(0, Number(order.total) || basketTotal);
 
   const address = {
     contactName: order.customer_name,
@@ -68,11 +103,11 @@ export async function initCheckoutForm(
     zipCode: order.zip_code || "34000",
   };
 
-  const request: Record<string, unknown> = {
+  const result = await postIyzico(INIT_PATH, {
     locale: "tr",
     conversationId: order.conversation_id,
     price: money(basketTotal),
-    paidPrice: money(basketTotal),
+    paidPrice: money(paidTotal),
     currency: "TRY",
     basketId: order.code,
     paymentGroup: "PRODUCT",
@@ -94,9 +129,7 @@ export async function initCheckoutForm(
     shippingAddress: address,
     billingAddress: address,
     basketItems,
-  };
-
-  const result = await callIyzico((cb) => client().checkoutFormInitialize.create(request, cb));
+  });
 
   if (result.status !== "success") {
     return {
@@ -122,7 +155,7 @@ export type CheckoutRetrieveResult = {
 };
 
 export async function retrieveCheckoutForm(token: string): Promise<CheckoutRetrieveResult> {
-  const result = await callIyzico((cb) => client().checkoutForm.retrieve({ locale: "tr", token }, cb));
+  const result = await postIyzico(RETRIEVE_PATH, { locale: "tr", token });
   const success = result.status === "success" && result.paymentStatus === "SUCCESS";
 
   return {
@@ -132,23 +165,6 @@ export async function retrieveCheckoutForm(token: string): Promise<CheckoutRetri
     basketId: String(result.basketId ?? ""),
     message: success ? "Ödeme başarılı" : String(result.errorMessage ?? "Ödeme tamamlanamadı."),
   };
-}
-
-type IyzicoCallback = (err: unknown, result: Record<string, unknown>) => void;
-
-async function callIyzico(
-  invoke: (callback: IyzicoCallback) => void,
-): Promise<Record<string, unknown>> {
-  try {
-    return await new Promise<Record<string, unknown>>((resolve, reject) => {
-      invoke((err, res) => (err ? reject(err) : resolve(res)));
-    });
-  } catch (error) {
-    return {
-      status: "failure",
-      errorMessage: error instanceof Error ? error.message : "iyzico bağlantı hatası",
-    };
-  }
 }
 
 function normalizePhone(phone: string): string {

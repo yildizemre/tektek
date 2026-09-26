@@ -1,5 +1,21 @@
+import { createHmac, randomBytes } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { createClient } from "@libsql/client/web";
-import Iyzipay from "iyzipay";
+
+for (const line of readFileSync(resolve(process.cwd(), ".env"), "utf8").split(/\r?\n/)) {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.startsWith("#")) continue;
+  const eq = trimmed.indexOf("=");
+  if (eq === -1) continue;
+  const key = trimmed.slice(0, eq).trim();
+  let value = trimmed.slice(eq + 1).trim();
+  if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) {
+    value = value.slice(1, -1);
+  }
+  if (!process.env[key]) process.env[key] = value;
+}
 
 function present(name: string) {
   const value = process.env[name] ?? "";
@@ -43,14 +59,9 @@ try {
   console.log("Turso HATA", error instanceof Error ? error.message : error);
 }
 
-console.log("\n=== iyzico (kart cekilmez) ===");
-const iyzipay = new Iyzipay({
-  apiKey: process.env.IYZICO_API_KEY ?? "",
-  secretKey: process.env.IYZICO_SECRET_KEY ?? "",
-  uri: process.env.IYZICO_BASE_URL ?? "https://api.iyzipay.com",
-});
-
-const request = {
+const INIT_PATH = "/payment/iyzipos/checkoutform/initialize/auth/ecom";
+const baseUrl = (process.env.IYZICO_BASE_URL || "https://sandbox-api.iyzipay.com").replace(/\/$/, "");
+const body = JSON.stringify({
   locale: "tr",
   conversationId: `check-${Date.now()}`,
   price: "1.00",
@@ -96,15 +107,27 @@ const request = {
       price: "1.00",
     },
   ],
-};
-
-const result = await new Promise<Record<string, unknown>>((resolve, reject) => {
-  iyzipay.checkoutFormInitialize.create(request, (err: unknown, res: Record<string, unknown>) => {
-    if (err) reject(err);
-    else resolve(res);
-  });
 });
 
+const apiKey = process.env.IYZICO_API_KEY ?? "";
+const secretKey = process.env.IYZICO_SECRET_KEY ?? "";
+const randomKey = `${Date.now()}${randomBytes(8).toString("hex")}`;
+const signature = createHmac("sha256", secretKey).update(randomKey + INIT_PATH + body).digest("hex");
+const authorization = `IYZWSv2 ${Buffer.from(`apiKey:${apiKey}&randomKey:${randomKey}&signature:${signature}`).toString("base64")}`;
+
+console.log("\n=== iyzico HTTP (kart cekilmez) ===");
+const response = await fetch(`${baseUrl}${INIT_PATH}`, {
+  method: "POST",
+  headers: {
+    Authorization: authorization,
+    "x-iyzi-rnd": randomKey,
+    "Content-Type": "application/json",
+  },
+  body,
+});
+
+const result = (await response.json()) as Record<string, unknown>;
+console.log("http", response.status);
 console.log("status", result.status);
 console.log("errorCode", result.errorCode ?? "-");
 console.log("errorMessage", result.errorMessage ?? "-");
