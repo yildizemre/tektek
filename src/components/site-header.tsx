@@ -85,7 +85,7 @@ export function SiteHeader({
   const activeCategory = categories.find((category) => category.id === openMenu);
 
   return (
-    <header className="sticky top-0 z-50 bg-header text-header-fg">
+    <header className="sticky top-0 z-50 border-b border-ink-100 bg-[#f7f8fa]/95 text-ink-900 backdrop-blur">
       {announcementsEnabled && announcements.length > 0 && (
         <div className="pause-on-hover overflow-hidden bg-ann py-2 text-ann-fg">
           <div
@@ -103,20 +103,18 @@ export function SiteHeader({
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="-ml-2 rounded-full p-2 transition hover:bg-white/10 lg:hidden"
+          className="-ml-2 rounded-full p-2 transition hover:bg-ink-900/5 lg:hidden"
           aria-label="Menüyü aç"
         >
           <Menu className="size-5" />
         </button>
 
         <Link href="/" className="flex shrink-0 items-center gap-2 text-lg font-extrabold tracking-tight">
-          <span className="rounded-xl bg-white px-3 py-1.5">
-            <Image src="/logo-tekteknoloji.png" alt="Tek Teknoloji" width={411} height={111} priority className="h-8 w-auto sm:h-10" />
-          </span>
+          <Image src="/logo-tekteknoloji.png" alt="Tek Teknoloji" width={411} height={111} priority className="h-9 w-auto sm:h-11" />
         </Link>
 
         <form onSubmit={submitSearch} className="mx-auto hidden w-full max-w-lg lg:block">
-          <div className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2.5 transition focus-within:bg-white/20">
+          <div className="flex items-center gap-2 rounded-full bg-ink-900/5 px-4 py-2.5 transition focus-within:bg-ink-900/10">
             <Search className="size-4 opacity-60" />
             <input
               name="q"
@@ -130,7 +128,7 @@ export function SiteHeader({
           <button
             type="button"
             onClick={() => setSearchOpen((value) => !value)}
-            className="rounded-full p-2 transition hover:bg-white/10 lg:hidden"
+            className="rounded-full p-2 transition hover:bg-ink-900/5 lg:hidden"
             aria-label="Ara"
           >
             <Search className="size-5" />
@@ -139,7 +137,7 @@ export function SiteHeader({
           {supportPhone && (
             <a
               href={`tel:${supportPhone.replace(/\s/g, "")}`}
-              className="hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition hover:bg-white/10 xl:flex"
+              className="hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition hover:bg-ink-900/5 xl:flex"
             >
               <Phone className="size-4" />
               {supportPhone}
@@ -149,7 +147,7 @@ export function SiteHeader({
           {session ? (
             <Link
               href={session.role === "admin" ? "/admin" : "/hesap"}
-              className="hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition hover:bg-white/10 sm:flex"
+              className="hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition hover:bg-ink-900/5 sm:flex"
             >
               {session.role === "admin" ? <LayoutDashboard className="size-4" /> : <User className="size-4" />}
               <span className="max-w-24 truncate">{session.role === "admin" ? "Yönetim" : session.name.split(" ")[0] || "Hesabım"}</span>
@@ -157,7 +155,7 @@ export function SiteHeader({
           ) : (
             <Link
               href="/giris"
-              className="hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition hover:bg-white/10 sm:flex"
+              className="hidden items-center gap-2 rounded-full px-3 py-2 text-sm font-semibold transition hover:bg-ink-900/5 sm:flex"
             >
               <LogIn className="size-4" />
               Giriş yap
@@ -167,7 +165,7 @@ export function SiteHeader({
           <button
             type="button"
             onClick={openCart}
-            className="relative flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-bold text-ink-900 transition hover:opacity-90"
+            className="relative flex items-center gap-2 rounded-full bg-ink-900 px-4 py-2.5 text-sm font-bold text-white transition hover:opacity-90"
           >
             <ShoppingBag className="size-4" />
             <span className="hidden sm:inline">Sepet</span>
@@ -182,7 +180,7 @@ export function SiteHeader({
 
       {searchOpen && (
         <form onSubmit={submitSearch} className="container-page pb-3 lg:hidden">
-          <div className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2.5">
+          <div className="flex items-center gap-2 rounded-full bg-ink-900/5 px-4 py-2.5">
             <Search className="size-4 opacity-60" />
             <input
               name="q"
@@ -196,7 +194,7 @@ export function SiteHeader({
 
       {/* Masaüstü kategori menüsü */}
       <nav
-        className="relative hidden border-t border-white/10 lg:block"
+        className="relative hidden border-t border-ink-100 lg:block"
         onMouseLeave={hoverClose}
         onMouseEnter={() => closeTimer.current && clearTimeout(closeTimer.current)}
       >
@@ -208,7 +206,7 @@ export function SiteHeader({
               onMouseEnter={() => hoverOpen(category.id)}
               onFocus={() => hoverOpen(category.id)}
               className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-2 transition ${
-                openMenu === category.id ? "bg-white/15" : "opacity-85 hover:opacity-100"
+                openMenu === category.id ? "bg-ink-900/5" : "opacity-85 hover:opacity-100"
               }`}
             >
               {category.name}

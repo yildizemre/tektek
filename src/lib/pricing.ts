@@ -74,10 +74,24 @@ export function tierFor(tiers: ProductTier[], quantity: number): ProductTier | n
   return eligible[0] ?? null;
 }
 
-export function tierUnitPrice(unitPrice: number, tiers: ProductTier[], quantity: number): number {
-  const tier = tierFor(tiers, quantity);
-  if (!tier) return round(unitPrice);
-  return round(unitPrice * (1 - tier.discount_percent / 100));
+/**
+ * Kademe indirimi tüm sepete değil, eşiği aşan ürünlere uygulanır:
+ * "2 adette %10" → 1. ürün tam fiyat, 2. ürün %10 indirimli. Dönen değer adet başı ortalamadır.
+ */
+export function tierUnitPrice(
+  unitPrice: number,
+  tiers: Pick<ProductTier, "quantity" | "discount_percent">[],
+  quantity: number,
+): number {
+  const tier = tiers
+    .filter((item) => item.quantity <= quantity && item.discount_percent > 0)
+    .sort((a, b) => b.quantity - a.quantity)[0];
+  if (!tier || quantity <= 0) return round(unitPrice);
+
+  const fullPriced = Math.max(0, tier.quantity - 1);
+  const discounted = quantity - fullPriced;
+  const total = unitPrice * fullPriced + unitPrice * (1 - tier.discount_percent / 100) * discounted;
+  return round(total / quantity);
 }
 
 export type CouponCheck =

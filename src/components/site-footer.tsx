@@ -72,9 +72,7 @@ export function SiteFooter({ settings, categories, links, slides }: Props) {
       <div className="container-page grid gap-10 py-14 lg:grid-cols-[1.4fr_repeat(3,minmax(0,1fr))]">
         <div>
           <Link href="/" className="flex items-center gap-2 text-lg font-extrabold">
-            <span className="rounded-xl bg-white px-3 py-1.5">
-            <Image src="/logo-tekteknoloji.png" alt="Tek Teknoloji" width={411} height={111} priority className="h-8 w-auto sm:h-10" />
-          </span>
+            <Image src="/logo-tekteknoloji.png" alt="Tek Teknoloji" width={411} height={111} className="h-10 w-auto brightness-0 invert" />
           </Link>
 
           <p className="mt-4 max-w-sm text-sm opacity-70">{settings.footer_text}</p>

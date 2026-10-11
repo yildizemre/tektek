@@ -114,7 +114,7 @@ export function ProductBuyBox({ product, stock, variants, tiers }: Props) {
                       {tier.badge}
                     </span>
                   )}
-                  <p className="text-xs font-semibold text-ink-400">{tier.quantity} Adet · %{tier.discount_percent} indirim</p>
+                  <p className="text-xs font-semibold text-ink-400">{tier.quantity} Adet · {tier.quantity}. ürüne %{tier.discount_percent} indirim</p>
                   <p className="mt-1 text-sm font-extrabold">{formatPrice(price)}</p>
                   <p className="text-[11px] text-ink-300 line-through">{formatPrice(list)}</p>
                 </button>
@@ -129,7 +129,7 @@ export function ProductBuyBox({ product, stock, variants, tiers }: Props) {
           <p className="text-3xl font-extrabold">{formatPrice(finalUnit)}</p>
           {activeTier && (
             <p className="text-xs font-semibold text-emerald-600">
-              {quantity} adette %{activeTier.discount_percent} kademeli indirim uygulandı
+              {activeTier.quantity}. üründen itibaren %{activeTier.discount_percent} indirim uygulandı · Toplam {formatPrice(finalUnit * quantity)}
             </p>
           )}
         </div>

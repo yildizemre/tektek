@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
+import { tierUnitPrice } from "@/lib/pricing";
 import type { CartLine } from "@/lib/types";
 
 const STORAGE_KEY = "tekteknoloji.cart.v2";
@@ -12,12 +13,7 @@ const EMPTY: CartState = { lines: [], ready: false };
 
 /** "Daha fazla al, az öde" indirimi sepette adet değiştikçe yeniden hesaplanır. */
 export function lineUnitPrice(line: CartLine): number {
-  const tier = (line.tiers ?? [])
-    .filter((item) => item.quantity <= line.quantity && item.discount_percent > 0)
-    .sort((a, b) => b.quantity - a.quantity)[0];
-
-  const price = tier ? line.price * (1 - tier.discount_percent / 100) : line.price;
-  return Math.round((price + Number.EPSILON) * 100) / 100;
+  return tierUnitPrice(line.price, line.tiers ?? [], line.quantity);
 }
 
 export function lineTierDiscount(line: CartLine): number {
