@@ -40,8 +40,6 @@ export function SiteHeader({
   categories,
   announcements,
   session,
-  logoText,
-  logoUrl,
   supportPhone,
   announcementSpeed,
   announcementsEnabled,
@@ -112,16 +110,9 @@ export function SiteHeader({
         </button>
 
         <Link href="/" className="flex shrink-0 items-center gap-2 text-lg font-extrabold tracking-tight">
-          {logoUrl ? (
-            <Image src={logoUrl} alt={logoText} width={160} height={40} unoptimized className="h-9 w-auto object-contain" />
-          ) : (
-            <>
-              <span className="grid size-9 place-items-center rounded-xl bg-primary text-sm font-black text-primary-fg">
-                {logoText.slice(0, 1).toUpperCase()}
-              </span>
-              <span className="hidden sm:inline">{logoText}</span>
-            </>
-          )}
+          <span className="rounded-xl bg-white px-3 py-1.5">
+            <Image src="/logo-tekteknoloji.png" alt="Tek Teknoloji" width={411} height={111} priority className="h-8 w-auto sm:h-10" />
+          </span>
         </Link>
 
         <form onSubmit={submitSearch} className="mx-auto hidden w-full max-w-lg lg:block">

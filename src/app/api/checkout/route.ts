@@ -15,6 +15,7 @@ import {
   getVariants,
 } from "@/lib/queries";
 import { baseUrlFrom } from "@/lib/site-url";
+import { COD_FEE } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -113,9 +114,9 @@ export async function POST(request: Request) {
   const threshold = Number(settings.free_shipping_threshold ?? 0);
   const baseShipping = Number(settings.shipping_cost ?? 0);
   const afterDiscount = Math.max(0, subtotal - discount);
-  const shipping = baseShipping > 0 && afterDiscount < threshold ? baseShipping : 0;
-
   const cashOnDelivery = body.paymentMethod === "cod";
+  const shipping = (baseShipping > 0 && afterDiscount < threshold ? baseShipping : 0) + (cashOnDelivery ? COD_FEE : 0);
+
   const code = generateOrderCode();
   const order = await createOrder(
     {

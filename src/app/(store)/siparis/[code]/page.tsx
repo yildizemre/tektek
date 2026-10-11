@@ -38,7 +38,7 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
         </h1>
         <p className="max-w-md text-sm text-ink-500">
           {cod && !paid
-            ? "Siparişin alındı. Ödemeyi teslimat sırasında kuryeye nakit olarak yapacaksın."
+            ? "Siparişin alındı. Ödemeyi teslimatta kuryeye yalnızca nakit olarak yapacaksın; kapıda kartla ödeme yapılamaz."
             : paid
             ? "Ödemen başarıyla tamamlandı. Sipariş detaylarını e-posta adresine gönderdik."
             : "Ödeme henüz tamamlanmadı. Aşağıdaki bilgileri kullanarak havale/EFT ile ödeyebilir veya bizimle iletişime geçebilirsin."}
@@ -94,7 +94,7 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
             <span>{formatPrice(order.subtotal)}</span>
           </div>
           <div className="flex justify-between text-ink-500">
-            <span>Kargo</span>
+            <span>{cod ? "Kargo / kapıda ödeme hizmet bedeli" : "Kargo"}</span>
             <span>{order.shipping_cost > 0 ? formatPrice(order.shipping_cost) : "Ücretsiz"}</span>
           </div>
           <div className="flex justify-between border-t border-ink-100 pt-3 text-base font-extrabold">

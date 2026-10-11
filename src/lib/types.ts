@@ -269,6 +269,9 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   failed: "Başarısız",
 };
 
+/** Kapıda nakit ödemede siparişe eklenen kargo hizmet bedeli (TL). */
+export const COD_FEE = 200;
+
 export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   iyzico: "Kredi / Banka Kartı (iyzico)",
   transfer: "Havale / EFT",

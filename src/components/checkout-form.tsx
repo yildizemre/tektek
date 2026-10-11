@@ -7,6 +7,7 @@ import { AlertCircle, Banknote, CreditCard, Loader2, Lock, ShoppingBag } from "l
 
 import { TR_CITIES } from "@/lib/cities";
 import { formatPrice } from "@/lib/format";
+import { COD_FEE } from "@/lib/types";
 
 import { useCart } from "./cart-context";
 import { Media } from "./media";
@@ -159,7 +160,7 @@ export function CheckoutForm({
               value: "cod" as const,
               icon: Banknote,
               title: "Kapıda Nakit Ödeme",
-              text: "Siparişini teslim alırken kuryeye nakit olarak öde.",
+              text: `Sadece nakit geçerlidir, kapıda kartla ödeme yapılamaz. +${formatPrice(COD_FEE)} kargo hizmet bedeli eklenir.`,
             },
           ].map((option) => (
             <label
@@ -184,6 +185,16 @@ export function CheckoutForm({
             </label>
           ))}
         </section>
+
+        {cod && (
+          <div className="flex gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+            <Banknote className="size-5 shrink-0" />
+            <p>
+              <strong>Kapıda yalnızca nakit ödeme kabul edilir.</strong> Kapıda kredi kartı veya POS ile ödeme
+              yapılamaz. Bu seçenekte siparişine <strong>{formatPrice(COD_FEE)} kargo hizmet bedeli</strong> eklenir.
+            </p>
+          </div>
+        )}
 
         {!iyzicoEnabled && !cod && (
           <div className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
@@ -236,9 +247,15 @@ export function CheckoutForm({
             <span>Kargo</span>
             <span className="font-semibold text-emerald-600">Ücretsiz</span>
           </div>
+          {cod && (
+            <div className="flex justify-between text-ink-500">
+              <span>Kapıda ödeme kargo hizmet bedeli</span>
+              <span className="font-semibold text-ink-900">+{formatPrice(COD_FEE)}</span>
+            </div>
+          )}
           <div className="flex justify-between border-t border-ink-100 pt-3 text-base font-bold">
             <span>Toplam</span>
-            <span>{formatPrice(subtotal)}</span>
+            <span>{formatPrice(subtotal + (cod ? COD_FEE : 0))}</span>
           </div>
         </div>
 
@@ -259,7 +276,7 @@ export function CheckoutForm({
 
         <p className="text-center text-xs leading-relaxed text-ink-400">
           {cod
-            ? "Ödemeyi teslimat sırasında kuryeye nakit olarak yaparsın."
+            ? "Ödemeyi teslimatta kuryeye yalnızca NAKİT olarak yaparsın; kapıda kredi kartı / POS ile ödeme kabul edilmez."
             : <>Ödemeler 256-bit SSL ile şifrelenir ve iyzico altyapısı üzerinden alınır. Kart bilgileriniz
           sitemizde saklanmaz.</>}
         </p>
