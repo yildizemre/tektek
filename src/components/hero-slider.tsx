@@ -1,13 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const slides = [
-  { src: "/slider/teknoloji-full-set.webp", alt: "Teknoloji Full Set" },
-  { src: "/slider/eglence-full-set.webp", alt: "Eğlence Full Set" },
-  { src: "/slider/arac-ici-full-set.webp", alt: "Araç İçi Full Set" },
-];
+import { CAMPAIGN_SETS } from "@/lib/set-data";
+
+const slides = CAMPAIGN_SETS.map((set) => ({ src: set.banner, alt: set.name, href: `/set/${set.slug}` }));
 
 export function HeroSlider() {
   const [index, setIndex] = useState(0);
@@ -25,14 +24,22 @@ export function HeroSlider() {
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
         {slides.map((slide, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            key={slide.src}
-            src={slide.src}
-            alt={slide.alt}
-            className="aspect-[1916/821] w-full shrink-0 object-cover"
-            loading={i === 0 ? "eager" : "lazy"}
-          />
+          <div key={slide.src} className="relative w-full shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={slide.src}
+              alt={slide.alt}
+              className="aspect-[1916/821] w-full object-cover"
+              loading={i === 0 ? "eager" : "lazy"}
+            />
+            {/* Görseldeki "Hemen İncele" butonunun üstüne denk gelen tıklanabilir alan */}
+            <Link
+              href={slide.href}
+              aria-label={`${slide.alt} – Hemen İncele`}
+              tabIndex={i === index ? 0 : -1}
+              className="absolute left-[2.6%] top-[79%] h-[11.5%] w-[22%] rounded-full transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+            />
+          </div>
         ))}
       </div>
 
