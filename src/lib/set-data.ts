@@ -5,6 +5,8 @@ export type CampaignSet = {
   name: string;
   subtitle: string;
   banner: string;
+  /** Detay sayfasındaki ürün fotoğrafları; yoksa banner gösterilir. */
+  gallery?: string[];
   price: number;
   compareAt: number;
   items: SetItem[];
@@ -18,6 +20,7 @@ export const CAMPAIGN_SETS: CampaignSet[] = [
     name: "Teknoloji Full Set",
     subtitle: "Tablet + Kablosuz Kulaklık + Mini Dijital Kamera",
     banner: "/slider/teknoloji-full-set.webp",
+    gallery: [1, 2, 3, 4].map((n) => `/sets/teknoloji/${n}.webp`),
     price: 6500,
     compareAt: 8000,
     items: [

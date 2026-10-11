@@ -21,6 +21,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { ProductGallery } from "@/components/product-gallery";
 import { SetBuyButton } from "@/components/set-buy-button";
 import { formatPrice } from "@/lib/format";
 import { activeCampaigns, priceProduct } from "@/lib/pricing";
@@ -88,8 +89,12 @@ export default async function SetPage({ params }: PageProps) {
             <p className="mt-2 text-ink-500">{set.subtitle}</p>
           </div>
 
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={set.banner} alt={set.name} className="w-full rounded-2xl" />
+          {set.gallery?.length ? (
+            <ProductGallery images={set.gallery} alt={set.name} accent="#f97316" icon="package" />
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={set.banner} alt={set.name} className="w-full rounded-2xl" />
+          )}
 
           <div
             className={`grid gap-3 rounded-2xl bg-ink-50 p-5 ${set.items.length === 3 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-4"}`}
@@ -125,7 +130,7 @@ export default async function SetPage({ params }: PageProps) {
                 name: product.name,
                 price,
                 listPrice,
-                image: product.image_url || set.banner,
+                image: set.gallery?.[0] || product.image_url || set.banner,
               }}
             />
           ) : (
