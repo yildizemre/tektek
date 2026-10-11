@@ -60,6 +60,7 @@ export const CAMPAIGN_SETS: CampaignSet[] = [
     name: "Araç İçi Full Set",
     subtitle: "Araç Kamerası + Şarjlı Süpürge + Akü Takviye & Kompresör + Hızlı Şarj Cihazı",
     banner: "/slider/arac-ici-full-set.webp",
+    gallery: [1, 2, 3, 4, 5].map((n) => `/sets/arac/${n}.webp`),
     price: 5500,
     compareAt: 7500,
     items: [
