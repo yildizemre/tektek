@@ -6,7 +6,7 @@ import { ClearCart } from "@/components/clear-cart";
 import { Media } from "@/components/media";
 import { formatDate, formatPrice } from "@/lib/format";
 import { getOrderByCode, getOrderItems, getSettings } from "@/lib/queries";
-import { ORDER_STATUS_LABELS } from "@/lib/types";
+import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Sipariş detayı" };
@@ -18,6 +18,7 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
 
   const [items, settings] = await Promise.all([getOrderItems(order.id), getSettings()]);
   const paid = order.payment_status === "paid";
+  const cod = order.payment_method === "cod";
 
   return (
     <div className="container-page max-w-3xl space-y-8 py-12">
@@ -33,10 +34,12 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
         </div>
 
         <h1 className="text-3xl font-extrabold tracking-tight">
-          {paid ? "Siparişin alındı!" : "Siparişin oluşturuldu"}
+          {paid || cod ? "Siparişin alındı!" : "Siparişin oluşturuldu"}
         </h1>
         <p className="max-w-md text-sm text-ink-500">
-          {paid
+          {cod && !paid
+            ? "Siparişin alındı. Ödemeyi teslimat sırasında kuryeye nakit olarak yapacaksın."
+            : paid
             ? "Ödemen başarıyla tamamlandı. Sipariş detaylarını e-posta adresine gönderdik."
             : "Ödeme henüz tamamlanmadı. Aşağıdaki bilgileri kullanarak havale/EFT ile ödeyebilir veya bizimle iletişime geçebilirsin."}
         </p>
@@ -47,7 +50,7 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
         </div>
       </div>
 
-      {!paid && (
+      {!paid && !cod && (
         <div className="flex gap-3 rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
           <Landmark className="size-5 shrink-0" />
           <div className="space-y-1">
@@ -114,6 +117,10 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
         <div className="space-y-1 rounded-3xl border border-ink-100 p-6 text-sm">
           <h2 className="mb-2 text-sm font-bold">Sipariş bilgileri</h2>
           <p className="text-ink-500">Tarih: {formatDate(order.created_at)}</p>
+          <p className="text-ink-500">
+            Ödeme yöntemi:{" "}
+            <strong className="text-ink-900">{PAYMENT_METHOD_LABELS[order.payment_method] ?? order.payment_method}</strong>
+          </p>
           <p className="text-ink-500">
             Ödeme durumu: <strong className="text-ink-900">{paid ? "Ödendi" : "Bekliyor"}</strong>
           </p>

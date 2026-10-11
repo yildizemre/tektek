@@ -35,6 +35,8 @@ type CheckoutBody = {
   };
   items: IncomingItem[];
   couponCode?: string;
+  /** "cod" = kapıda nakit ödeme; boş/diğer = online (iyzico veya havale). */
+  paymentMethod?: string;
 };
 
 export async function POST(request: Request) {
@@ -113,6 +115,7 @@ export async function POST(request: Request) {
   const afterDiscount = Math.max(0, subtotal - discount);
   const shipping = baseShipping > 0 && afterDiscount < threshold ? baseShipping : 0;
 
+  const cashOnDelivery = body.paymentMethod === "cod";
   const code = generateOrderCode();
   const order = await createOrder(
     {
@@ -133,12 +136,12 @@ export async function POST(request: Request) {
       subtotal,
       shipping_cost: shipping,
       total: afterDiscount + shipping,
-      payment_method: isIyzicoConfigured() ? "iyzico" : "transfer",
+      payment_method: cashOnDelivery ? "cod" : isIyzicoConfigured() ? "iyzico" : "transfer",
     },
     orderItems,
   );
 
-  if (!isIyzicoConfigured()) {
+  if (cashOnDelivery || !isIyzicoConfigured()) {
     return NextResponse.json({ ok: true, mode: "manual", redirectUrl: `/siparis/${order.code}` });
   }
 

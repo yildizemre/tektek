@@ -269,6 +269,12 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   failed: "Başarısız",
 };
 
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  iyzico: "Kredi / Banka Kartı (iyzico)",
+  transfer: "Havale / EFT",
+  cod: "Kapıda Nakit Ödeme",
+};
+
 export const MENU_SECTIONS: { key: string; label: string }[] = [
   { key: "footer1", label: "Footer – 1. sütun" },
   { key: "footer2", label: "Footer – 2. sütun" },

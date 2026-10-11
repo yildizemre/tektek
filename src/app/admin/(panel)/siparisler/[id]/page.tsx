@@ -7,7 +7,7 @@ import { DeleteButton } from "@/components/admin/delete-button";
 import { Media } from "@/components/media";
 import { formatDate, formatPrice } from "@/lib/format";
 import { getOrderById, getOrderItems } from "@/lib/queries";
-import { ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/types";
+import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Sipariş detayı" };
@@ -97,6 +97,11 @@ export default async function AdminOrderDetailPage({
               >
                 {PAYMENT_STATUS_LABELS[order.payment_status] ?? order.payment_status}
               </span>
+            </div>
+
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ink-500">Ödeme yöntemi</span>
+              <span className="font-semibold">{PAYMENT_METHOD_LABELS[order.payment_method] ?? order.payment_method}</span>
             </div>
 
             {order.payment_ref && (

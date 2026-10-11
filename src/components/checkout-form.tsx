@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { AlertCircle, Loader2, Lock, ShoppingBag } from "lucide-react";
+import { AlertCircle, Banknote, CreditCard, Loader2, Lock, ShoppingBag } from "lucide-react";
 
 import { TR_CITIES } from "@/lib/cities";
 import { formatPrice } from "@/lib/format";
@@ -24,6 +24,8 @@ export function CheckoutForm({
   const { lines, subtotal, ready, clear } = useCart();
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
+  const cod = paymentMethod === "cod";
   const router = useRouter();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -50,6 +52,7 @@ export function CheckoutForm({
         variantId: line.variantId,
       })),
       couponCode: String(data.get("couponCode") ?? ""),
+      paymentMethod,
     };
 
     try {
@@ -143,7 +146,46 @@ export function CheckoutForm({
           <input name="couponCode" placeholder="İndirim / referans kodu" className={FIELD} />
         </section>
 
-        {!iyzicoEnabled && (
+        <section className="space-y-3 rounded-3xl border border-ink-100 p-6">
+          <h2 className="text-sm font-bold uppercase tracking-wide text-ink-400">Ödeme yöntemi</h2>
+          {[
+            {
+              value: "online" as const,
+              icon: CreditCard,
+              title: iyzicoEnabled ? "Kredi / Banka Kartı" : "Havale / EFT",
+              text: iyzicoEnabled ? "iyzico güvenli ödeme sayfasında kartınla öde." : "Ödeme talimatı sipariş sayfasında gösterilir.",
+            },
+            {
+              value: "cod" as const,
+              icon: Banknote,
+              title: "Kapıda Nakit Ödeme",
+              text: "Siparişini teslim alırken kuryeye nakit olarak öde.",
+            },
+          ].map((option) => (
+            <label
+              key={option.value}
+              className={`flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition ${
+                paymentMethod === option.value ? "border-ink-900 bg-ink-50" : "border-ink-200 hover:border-ink-400"
+              }`}
+            >
+              <input
+                type="radio"
+                name="paymentMethod"
+                value={option.value}
+                checked={paymentMethod === option.value}
+                onChange={() => setPaymentMethod(option.value)}
+                className="size-4 accent-ink-900"
+              />
+              <option.icon className="size-6 shrink-0" />
+              <span>
+                <span className="block text-sm font-bold">{option.title}</span>
+                <span className="block text-xs text-ink-500">{option.text}</span>
+              </span>
+            </label>
+          ))}
+        </section>
+
+        {!iyzicoEnabled && !cod && (
           <div className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
             <AlertCircle className="size-5 shrink-0" />
             <p>
@@ -206,12 +248,20 @@ export function CheckoutForm({
           className="flex w-full items-center justify-center gap-2 rounded-full bg-ink-900 py-3.5 text-sm font-bold text-white transition hover:bg-brand-600 disabled:opacity-70"
         >
           {pending ? <Loader2 className="size-4 animate-spin" /> : <Lock className="size-4" />}
-          {pending ? "Yönlendiriliyor..." : iyzicoEnabled ? "iyzico ile öde" : "Siparişi tamamla"}
+          {pending
+            ? "Yönlendiriliyor..."
+            : cod
+              ? "Siparişi onayla (kapıda ödeme)"
+              : iyzicoEnabled
+                ? "iyzico ile öde"
+                : "Siparişi tamamla"}
         </button>
 
         <p className="text-center text-xs leading-relaxed text-ink-400">
-          Ödemeler 256-bit SSL ile şifrelenir ve iyzico altyapısı üzerinden alınır. Kart bilgileriniz
-          sitemizde saklanmaz.
+          {cod
+            ? "Ödemeyi teslimat sırasında kuryeye nakit olarak yaparsın."
+            : <>Ödemeler 256-bit SSL ile şifrelenir ve iyzico altyapısı üzerinden alınır. Kart bilgileriniz
+          sitemizde saklanmaz.</>}
         </p>
       </aside>
     </form>
