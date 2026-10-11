@@ -10,7 +10,7 @@ export function CategoryCard({ category }: { category: Category }) {
   return (
     <Link
       href={`/kategori/${category.slug}`}
-      className="group relative flex aspect-[16/10] flex-col justify-between overflow-hidden rounded-3xl p-5 transition hover:shadow-[0_20px_50px_-25px_rgba(11,13,24,0.5)]"
+      className="group relative flex aspect-[16/10] flex-col justify-between overflow-hidden rounded-3xl p-2 transition sm:p-3 hover:shadow-[0_20px_50px_-25px_rgba(11,13,24,0.5)]"
       style={{ background: accentGradient(category.accent) }}
     >
       {category.image_url ? (
@@ -29,7 +29,7 @@ export function CategoryCard({ category }: { category: Category }) {
       )}
 
       <div className="relative flex items-start justify-between">
-        <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-bold text-ink-700 backdrop-blur">
+        <span className="max-w-[85%] truncate rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold leading-4 text-ink-700 backdrop-blur sm:px-2.5 sm:text-xs">
           {category.name}
         </span>
         <span className="grid size-8 place-items-center rounded-full bg-ink-900 text-white opacity-0 transition group-hover:opacity-100">
