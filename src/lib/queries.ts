@@ -56,7 +56,7 @@ export const getCategoryTree = cache(async (): Promise<CategoryTree[]> => {
 
 export async function getHomeCategories(): Promise<Category[]> {
   return all<Category>(
-    "SELECT * FROM categories WHERE is_active = 1 AND show_on_home = 1 ORDER BY sort_order, name",
+    "SELECT * FROM categories WHERE parent_id IS NULL AND is_active = 1 AND show_on_home = 1 ORDER BY sort_order, name",
   );
 }
 

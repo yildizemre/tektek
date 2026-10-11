@@ -37,7 +37,7 @@ export default async function HomePage() {
 
   const styleFor = categoryStyles(allCategories);
   const liveCampaigns = activeCampaigns(campaigns);
-  const homeCategories = allCategories.filter((item) => item.is_active === 1 && item.show_on_home === 1);
+  const homeCategories = allCategories.filter((item) => !item.parent_id && item.is_active === 1 && item.show_on_home === 1);
   const categories = homeCategories.length > 0 ? homeCategories : allCategories.filter((item) => !item.parent_id);
 
   return (
