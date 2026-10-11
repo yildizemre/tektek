@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles, Truck, ShieldCheck, Headset } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { CategoryCard } from "@/components/category-card";
 import { Faq } from "@/components/faq";
+import { HeroSlider } from "@/components/hero-slider";
 import { ProductCard } from "@/components/product-card";
 import { Rail } from "@/components/rail";
 import { ReviewRail } from "@/components/review-rail";
@@ -41,64 +42,7 @@ export default async function HomePage() {
     <div className="space-y-16 pb-8 pt-8 sm:space-y-20">
       {settings.hero_enabled !== "0" && (
         <section className="container-page">
-          <div className="relative overflow-hidden rounded-4xl bg-ink-900 px-6 py-14 text-white sm:px-12 sm:py-20">
-            {settings.hero_image_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={settings.hero_image_url}
-                alt=""
-                className="absolute inset-0 size-full object-cover opacity-30"
-              />
-            ) : (
-              <>
-                <div
-                  className="pointer-events-none absolute -right-24 -top-24 size-[28rem] rounded-full opacity-25 blur-3xl"
-                  style={{ background: "radial-gradient(circle, #818cf8 0%, transparent 70%)" }}
-                />
-                <div
-                  className="pointer-events-none absolute -bottom-32 -left-20 size-[24rem] rounded-full opacity-20 blur-3xl"
-                  style={{ background: "radial-gradient(circle, #22d3ee 0%, transparent 70%)" }}
-                />
-              </>
-            )}
-
-            <div className="relative max-w-2xl animate-fade-up">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold">
-                <Sparkles className="size-3.5" />
-                {settings.hero_badge || settings.site_tagline}
-              </span>
-
-              <h1 className="mt-5 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-6xl">
-                {settings.hero_title}
-              </h1>
-
-              <p className="mt-5 max-w-xl text-base leading-relaxed text-white/70 sm:text-lg">
-                {settings.hero_subtitle}
-              </p>
-
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <Link
-                  href={settings.hero_cta_link || "/arama"}
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-ink-900 transition hover:bg-brand-100"
-                >
-                  {settings.hero_cta_text || "Alışverişe başla"}
-                  <ArrowRight className="size-4" />
-                </Link>
-                <Link
-                  href="/arama"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/20 px-6 py-3 text-sm font-semibold transition hover:bg-white/10"
-                >
-                  Tüm ürünler
-                </Link>
-              </div>
-
-              <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm text-white/70">
-                <span className="inline-flex items-center gap-2"><Truck className="size-4" /> Ücretsiz kargo</span>
-                <span className="inline-flex items-center gap-2"><ShieldCheck className="size-4" /> 2 yıl garanti</span>
-                <span className="inline-flex items-center gap-2"><Headset className="size-4" /> 7/24 destek</span>
-              </div>
-            </div>
-          </div>
+          <HeroSlider />
         </section>
       )}
 
