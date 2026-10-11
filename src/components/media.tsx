@@ -9,13 +9,15 @@ type MediaProps = {
   icon?: string | null;
   className?: string;
   iconClassName?: string;
+  /** contain: görseli kırpmadan tamamını gösterir (ürün fotoğrafları için). */
+  fit?: "cover" | "contain";
 };
 
 /**
  * Products and categories ship without photos, so anything missing an image URL
  * falls back to a branded gradient tile instead of a broken image.
  */
-export function Media({ src, alt, accent, icon, className = "", iconClassName = "size-14" }: MediaProps) {
+export function Media({ src, alt, accent, icon, className = "", iconClassName = "size-14", fit = "cover" }: MediaProps) {
   if (src) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
@@ -23,7 +25,7 @@ export function Media({ src, alt, accent, icon, className = "", iconClassName = 
         src={src}
         alt={alt}
         loading="lazy"
-        className={`size-full object-cover ${className}`}
+        className={`size-full ${fit === "contain" ? "bg-white object-contain" : "object-cover"} ${className}`}
       />
     );
   }

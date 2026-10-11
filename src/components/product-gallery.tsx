@@ -21,7 +21,7 @@ export function ProductGallery({
   return (
     <div className="space-y-3">
       <div className="aspect-square overflow-hidden rounded-3xl border border-ink-100">
-        <Media src={current} alt={alt} accent={accent} icon={icon} iconClassName="size-24" />
+        <Media src={current} alt={alt} accent={accent} icon={icon} fit="contain" iconClassName="size-24" />
       </div>
 
       {images.length > 1 && (

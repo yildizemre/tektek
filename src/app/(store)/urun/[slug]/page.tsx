@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { Check, CreditCard, RotateCcw, ShieldCheck, Star, Truck } from "lucide-react";
 
@@ -11,6 +11,7 @@ import { Rail } from "@/components/rail";
 import { parseJsonArray } from "@/lib/format";
 import { renderMarkdown } from "@/lib/markdown";
 import { activeCampaigns, priceProduct } from "@/lib/pricing";
+import { getCampaignSet } from "@/lib/set-data";
 import { absoluteUrl } from "@/lib/site";
 import {
   getCampaigns,
@@ -52,6 +53,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ProductPage({ params }: PageProps) {
   const { slug } = await params;
+  // Kampanya setlerinin kendi tasarlanmış detay sayfası var.
+  if (getCampaignSet(slug)) redirect(`/set/${slug}`);
+
   const product = await getProductBySlug(slug);
   if (!product || !product.is_active) notFound();
 

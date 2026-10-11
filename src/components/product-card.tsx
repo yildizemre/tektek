@@ -31,6 +31,7 @@ export function ProductCard({
           alt={product.name}
           accent={accent}
           icon={icon}
+          fit="contain"
           className="transition duration-500 group-hover:scale-[1.04]"
           iconClassName="size-16"
         />

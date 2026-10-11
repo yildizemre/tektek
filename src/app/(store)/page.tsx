@@ -9,6 +9,7 @@ import { Rail } from "@/components/rail";
 import { ReviewRail } from "@/components/review-rail";
 import { accentGradient, categoryStyles } from "@/lib/palette";
 import { activeCampaigns, priceProduct } from "@/lib/pricing";
+import { ensureCampaignSetProducts } from "@/lib/sets";
 import {
   getAllCategories,
   getCampaigns,
@@ -21,6 +22,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  await ensureCampaignSetProducts().catch(() => undefined);
   const [allCategories, settings, featured, newest, deals, reviews, faqs, campaigns] =
     await Promise.all([
       getAllCategories().catch(() => []),

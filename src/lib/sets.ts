@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { CAMPAIGN_SETS } from "./set-data";
+import { CAMPAIGN_SETS, setCover } from "./set-data";
 
 export { CAMPAIGN_SETS, getCampaignSet } from "./set-data";
 
@@ -20,7 +20,7 @@ export function ensureCampaignSetProducts() {
         sql: `INSERT OR IGNORE INTO products
                 (name, slug, sku, brand, short_description, description, price, compare_at_price, stock,
                  category_id, image_url, gallery, features, rating, review_count, is_active, is_featured, sort_order)
-              VALUES (?, ?, ?, 'Tek Teknoloji', ?, ?, ?, ?, 100, ?, ?, '[]', ?, 4.8, 0, 1, 1, ?)`,
+              VALUES (?, ?, ?, 'Tek Teknoloji', ?, ?, ?, ?, 100, ?, ?, ?, ?, 4.8, 0, 1, 1, ?)`,
         args: [
           set.name,
           set.slug,
@@ -30,10 +30,17 @@ export function ensureCampaignSetProducts() {
           set.price,
           set.compareAt,
           categoryId,
-          set.banner,
+          setCover(set),
+          JSON.stringify(set.gallery ?? []),
           JSON.stringify(set.items.map((item) => item.title)),
           -10 + index,
         ],
+      });
+      // İlk sürümde kapak olarak geniş banner yazılmıştı; panelden değiştirilmediyse kare kapağa geçir.
+      await client.execute({
+        sql: `UPDATE products SET image_url = ?, gallery = ?
+              WHERE slug = ? AND (image_url = ? OR image_url = '' OR image_url IS NULL)`,
+        args: [setCover(set), JSON.stringify(set.gallery ?? []), set.slug, set.banner],
       });
       if (result.rowsAffected && categoryId) {
         await client.execute({

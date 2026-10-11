@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import { ProductCard } from "@/components/product-card";
 import { SortSelect } from "@/components/sort-select";
+import { ensureCampaignSetProducts } from "@/lib/sets";
 import {
   countProducts,
   getAllCategories,
@@ -52,6 +53,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const page = Math.max(1, Number(query.sayfa ?? 1) || 1);
   const sort = (typeof query.sirala === "string" ? query.sirala : undefined) as ProductFilter["sort"];
 
+  await ensureCampaignSetProducts().catch(() => undefined);
   const [allCategories, products, total] = await Promise.all([
     getAllCategories(),
     getProducts({ categorySlug: slug, sort, limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE }),

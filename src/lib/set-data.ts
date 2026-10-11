@@ -79,6 +79,11 @@ export const CAMPAIGN_SETS: CampaignSet[] = [
   },
 ];
 
+/** Kartlarda kullanılan kare kapak; banner geniş olduğu için kartta kırpılır. */
+export function setCover(set: CampaignSet) {
+  return set.gallery?.[0] ?? set.banner;
+}
+
 export function getCampaignSet(slug: string) {
   return CAMPAIGN_SETS.find((item) => item.slug === slug) ?? null;
 }
