@@ -40,12 +40,13 @@ export const CAMPAIGN_SETS: CampaignSet[] = [
     name: "Eğlence Full Set",
     subtitle: "Drone + Taşınabilir Oyun Konsolu + Yıldız Projektörlü Nemlendirici + Karaoke Hoparlör",
     banner: "/slider/eglence-full-set.webp",
+    gallery: [1, 2, 3, 4].map((n) => `/sets/eglence/${n}.webp`),
     price: 4500,
     compareAt: 6500,
     items: [
-      { icon: "drone", label: "Drone", title: "Kameralı Mini Drone", text: "Katlanabilir gövde, kameralı ve kolay kumandalı keyifli uçuş deneyimi." },
-      { icon: "gamepad", label: "Oyun Konsolu", title: "Taşınabilir Oyun Konsolu", text: "Ekranlı el konsolu ve iki adet oyun kolu ile her yerde oyun keyfi." },
-      { icon: "star", label: "Nemlendirici", title: "Yıldız Projektörlü Nemlendirici", text: "Rahatlatıcı yıldız ışıkları ve sessiz çalışan hava nemlendirme." },
+      { icon: "drone", label: "Drone", title: "Kameralı Mini Drone", text: "HD kamera, katlanabilir tasarım ve kolay kontrol ile eğlenceli uçuş." },
+      { icon: "gamepad", label: "Oyun Konsolu", title: "Taşınabilir Oyun Konsolu", text: "Binlerce oyun, HDMI çıkış ve 2 kontrolcü ile taşınabilir oyun keyfi." },
+      { icon: "star", label: "Nemlendirici", title: "Yıldız Projektörlü Nemlendirici", text: "Renkli yıldız ışıkları ve sessiz çalışan hava nemlendirme." },
       { icon: "mic", label: "Karaoke", title: "Karaoke Hoparlör", text: "RGB ışıklı Bluetooth hoparlör ve iki kablosuz mikrofon." },
     ],
     reasons: [
