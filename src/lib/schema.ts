@@ -257,6 +257,23 @@ export const SCHEMA_STATEMENTS: string[] = [
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
+
+  `CREATE TABLE IF NOT EXISTS ai_jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind TEXT NOT NULL DEFAULT 'image',
+    prompt TEXT NOT NULL DEFAULT '',
+    params TEXT NOT NULL DEFAULT '{}',
+    status TEXT NOT NULL DEFAULT 'queued',
+    results TEXT NOT NULL DEFAULT '[]',
+    error TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
+
+  `CREATE TABLE IF NOT EXISTS secrets (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL DEFAULT ''
+  )`,
 ];
 
 export const INDEX_STATEMENTS: string[] = [

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@libsql/client": "^0.18.0",
+    "@netlify/blobs": "^11.1.6",
     "bcryptjs": "^3.0.3",
     "iyzipay": "^2.0.69",
     "jose": "^6.2.12",

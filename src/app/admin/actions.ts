@@ -605,3 +605,33 @@ export async function approveReviewAction(data: FormData) {
   refreshStore();
   revalidatePath("/admin/yorumlar");
 }
+
+/* --------------------------------------------------------------- AI stüdyo */
+
+export async function saveAiSettingsAction(prevOrData: FormState | FormData, maybeData?: FormData): Promise<FormState> {
+  const data = asFormData(prevOrData, maybeData);
+  await requireAdmin();
+  const { SECRET_KEYS, setSecret } = await import("@/lib/ai");
+
+  // Boş bırakılan anahtar alanı mevcut anahtarı korur; "sil" kutusu işaretliyse temizler.
+  for (const [field, key] of [
+    ["openai_api_key", SECRET_KEYS.openai],
+    ["gemini_api_key", SECRET_KEYS.gemini],
+  ] as const) {
+    const value = text(data, field);
+    if (data.get(`${field}_clear`)) await setSecret(key, "");
+    else if (value) await setSecret(key, value);
+  }
+  await setSecret(SECRET_KEYS.imageModel, text(data, "openai_image_model"));
+  await setSecret(SECRET_KEYS.videoModel, text(data, "gemini_video_model"));
+
+  revalidatePath("/admin/ai");
+  return { success: "AI ayarları kaydedildi." };
+}
+
+export async function deleteAiJobAction(data: FormData) {
+  await requireAdmin();
+  const { deleteJob } = await import("@/lib/ai");
+  await deleteJob(Number(data.get("id")));
+  revalidatePath("/admin/ai");
+}

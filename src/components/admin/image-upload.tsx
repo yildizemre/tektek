@@ -53,11 +53,16 @@ type Props = {
   label?: string;
   hint?: string;
   className?: string;
+  onChange?: (url: string) => void;
 };
 
-export function ImageUpload({ name, defaultValue = "", label, hint, className }: Props) {
+export function ImageUpload({ name, defaultValue = "", label, hint, className, onChange }: Props) {
   const inputId = useId();
-  const [value, setValue] = useState(defaultValue);
+  const [value, setStoredValue] = useState(defaultValue);
+  const setValue = (next: string) => {
+    setStoredValue(next);
+    onChange?.(next);
+  };
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);

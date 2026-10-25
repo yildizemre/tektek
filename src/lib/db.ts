@@ -12,7 +12,7 @@ declare global {
 
 /** Bump when new tables/columns are added so a running `next dev` re-applies schema. */
 /** Şemaya tablo / sütun eklendiğinde artırın; kurulu veritabanları açılışta otomatik güncellenir. */
-const SCHEMA_VERSION = 5;
+const SCHEMA_VERSION = 6;
 
 const DATA_DIR = path.join(process.cwd(), "data");
 
