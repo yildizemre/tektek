@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
+import { responsiveImage } from "@/lib/image";
 import { accentGradient } from "@/lib/palette";
 import type { Category } from "@/lib/types";
 
@@ -16,7 +17,8 @@ export function CategoryCard({ category }: { category: Category }) {
       {category.image_url ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={category.image_url}
+          {...responsiveImage(category.image_url, 828)}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           alt={category.name}
           loading="lazy"
           className="absolute inset-0 size-full object-cover transition duration-500 group-hover:scale-105"

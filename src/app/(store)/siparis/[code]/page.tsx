@@ -6,7 +6,7 @@ import { ClearCart } from "@/components/clear-cart";
 import { Media } from "@/components/media";
 import { formatDate, formatPrice } from "@/lib/format";
 import { getOrderByCode, getOrderItems, getSettings } from "@/lib/queries";
-import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS } from "@/lib/types";
+import { orderStatusLabel, PAYMENT_METHOD_LABELS } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Sipariş detayı" };
@@ -27,14 +27,14 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
       <div className="flex flex-col items-center gap-3 text-center">
         <div
           className={`grid size-16 place-items-center rounded-full ${
-            paid ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+            paid || cod ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
           }`}
         >
-          {paid ? <CheckCircle2 className="size-8" /> : <Clock className="size-8" />}
+          {paid || cod ? <CheckCircle2 className="size-8" /> : <Clock className="size-8" />}
         </div>
 
         <h1 className="text-3xl font-extrabold tracking-tight">
-          {paid || cod ? "Siparişin alındı!" : "Siparişin oluşturuldu"}
+          {cod && !paid ? "Kapıda ödeme siparişiniz alındı!" : paid ? "Siparişin alındı!" : "Siparişin oluşturuldu"}
         </h1>
         <p className="max-w-md text-sm text-ink-500">
           {cod && !paid
@@ -69,7 +69,7 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
             <Package className="size-4" /> Sipariş içeriği
           </h2>
           <span className="rounded-full bg-ink-900 px-3 py-1 text-xs font-semibold text-white">
-            {ORDER_STATUS_LABELS[order.status] ?? order.status}
+            {orderStatusLabel(order, "customer")}
           </span>
         </div>
 
@@ -122,7 +122,7 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
             <strong className="text-ink-900">{PAYMENT_METHOD_LABELS[order.payment_method] ?? order.payment_method}</strong>
           </p>
           <p className="text-ink-500">
-            Ödeme durumu: <strong className="text-ink-900">{paid ? "Ödendi" : "Bekliyor"}</strong>
+            Ödeme durumu: <strong className="text-ink-900">{paid ? "Ödendi" : cod ? "Kapıda nakit ödenecek" : "Bekliyor"}</strong>
           </p>
           {order.payment_ref && <p className="text-ink-500">Ödeme referansı: {order.payment_ref}</p>}
           {order.note && <p className="text-ink-500">Not: {order.note}</p>}

@@ -54,3 +54,10 @@ export function parseJsonArray(value: string | null | undefined): string[] {
     return [];
   }
 }
+
+/** Bir yorumun tüm fotoğrafları (yeni `images` listesi + eski tek `image_url`). */
+export function reviewPhotos(review: { image_url?: string | null; images?: string | null }): string[] {
+  const list = parseJsonArray(review.images ?? "[]");
+  if (review.image_url && !list.includes(review.image_url)) list.unshift(review.image_url);
+  return list.filter(Boolean);
+}

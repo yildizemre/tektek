@@ -504,25 +504,26 @@ export async function saveReview(input: {
   title: string;
   body: string;
   image_url: string;
+  images?: string;
   is_approved: number;
   is_featured: number;
 }) {
   if (input.id) {
     await run(
       `UPDATE reviews SET product_id = ?, author = ?, rating = ?, title = ?, body = ?,
-        image_url = ?, is_approved = ?, is_featured = ? WHERE id = ?`,
+        image_url = ?, images = ?, is_approved = ?, is_featured = ? WHERE id = ?`,
       [
         input.product_id, input.author, input.rating, input.title, input.body,
-        input.image_url, input.is_approved, input.is_featured, input.id,
+        input.image_url, input.images ?? "[]", input.is_approved, input.is_featured, input.id,
       ],
     );
   } else {
     await run(
-      `INSERT INTO reviews (product_id, user_id, author, rating, title, body, image_url, is_approved, is_featured)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO reviews (product_id, user_id, author, rating, title, body, image_url, images, is_approved, is_featured)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         input.product_id, input.user_id, input.author, input.rating, input.title,
-        input.body, input.image_url, input.is_approved, input.is_featured,
+        input.body, input.image_url, input.images ?? "[]", input.is_approved, input.is_featured,
       ],
     );
   }
@@ -1092,4 +1093,8 @@ export async function listMedia(limit = 60) {
 
 export async function deleteMedia(id: number) {
   await run("DELETE FROM media WHERE id = ?", [id]);
+}
+
+export async function setProductVideo(productId: number, videoUrl: string) {
+  await run("UPDATE products SET video_url = ? WHERE id = ?", [videoUrl, productId]);
 }

@@ -95,6 +95,20 @@ export function ProductForm({
             <GalleryUpload name="gallery" defaultValue={parseJsonArray(product?.gallery)} label="Galeri" />
           </section>
 
+          <section className="space-y-3 rounded-3xl border border-ink-100 bg-white p-6">
+            <h2 className="text-sm font-bold">Ürün videosu</h2>
+            <input
+              name="video_url"
+              defaultValue={product?.video_url ?? ""}
+              placeholder="Google Drive, YouTube veya .mp4 bağlantısı"
+              className={FIELD}
+            />
+            <p className="text-xs text-ink-400">
+              Ürün sayfasında sessiz ve otomatik oynar. Drive kullanıyorsan dosyayı &quot;Bağlantıya sahip olan herkes&quot;
+              ile paylaş ve bağlantıyı buraya yapıştır.
+            </p>
+          </section>
+
           <section className="space-y-4 rounded-3xl border border-ink-100 bg-white p-6">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold">Renk seçenekleri</h2>

@@ -3,7 +3,7 @@ import { PackageSearch } from "lucide-react";
 
 import { formatDate, formatPrice } from "@/lib/format";
 import { getOrderByCode } from "@/lib/queries";
-import { ORDER_STATUS_LABELS } from "@/lib/types";
+import { orderStatusLabel } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Sipariş takip" };
@@ -55,7 +55,7 @@ export default async function OrderTrackingPage({
           <div className="flex items-center justify-between">
             <span className="text-lg font-extrabold tracking-wider">{matched.code}</span>
             <span className="rounded-full bg-ink-900 px-3 py-1 text-xs font-semibold text-white">
-              {ORDER_STATUS_LABELS[matched.status] ?? matched.status}
+              {orderStatusLabel(matched, "customer")}
             </span>
           </div>
           <p className="text-sm text-ink-500">Tarih: {formatDate(matched.created_at)}</p>

@@ -7,7 +7,8 @@ import { DeleteButton } from "@/components/admin/delete-button";
 import { Media } from "@/components/media";
 import { formatDate, formatPrice } from "@/lib/format";
 import { getOrderById, getOrderItems } from "@/lib/queries";
-import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/types";
+import { canShip, ShipButton } from "@/components/admin/ship-button";
+import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS, orderStatusLabel, orderStatusTone, paymentStatusLabel } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Sipariş detayı" };
@@ -92,12 +93,28 @@ export default async function AdminOrderDetailPage({
                     ? "bg-emerald-50 text-emerald-700"
                     : order.payment_status === "failed"
                       ? "bg-red-50 text-red-600"
-                      : "bg-amber-50 text-amber-700"
+                      : order.payment_method === "cod"
+                        ? "bg-sky-50 text-sky-700"
+                        : "bg-amber-50 text-amber-700"
                 }`}
               >
-                {PAYMENT_STATUS_LABELS[order.payment_status] ?? order.payment_status}
+                {paymentStatusLabel(order)}
               </span>
             </div>
+
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-ink-500">Sipariş durumu</span>
+              <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${orderStatusTone(order)}`}>
+                {orderStatusLabel(order)}
+              </span>
+            </div>
+
+            {canShip(order) && (
+              <div className="pt-1">
+                <ShipButton id={order.id} block />
+                <p className="mt-1.5 text-center text-[11px] text-ink-400">Takip bilgisi girmen gerekmez.</p>
+              </div>
+            )}
 
             <div className="flex items-center justify-between text-sm">
               <span className="text-ink-500">Ödeme yöntemi</span>
@@ -115,16 +132,20 @@ export default async function AdminOrderDetailPage({
               <input type="hidden" name="id" value={order.id} />
               <select name="status" defaultValue={order.status} className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm">
                 {Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
+                  <option key={value} value={value}>
+                    {value === "pending" && order.payment_method === "cod" ? "Kapıda ödeme" : label}
+                  </option>
                 ))}
               </select>
               <select name="payment_status" defaultValue={order.payment_status} className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm">
                 {Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
+                  <option key={value} value={value}>
+                    {value === "pending" && order.payment_method === "cod" ? "Kapıda ödenecek" : label}
+                  </option>
                 ))}
               </select>
-              <input name="carrier" defaultValue={order.carrier} placeholder="Kargo firması" className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm" />
-              <input name="tracking_number" defaultValue={order.tracking_number} placeholder="Takip no" className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm" />
+              <input name="carrier" defaultValue={order.carrier} placeholder="Kargo firması (isteğe bağlı)" className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm" />
+              <input name="tracking_number" defaultValue={order.tracking_number} placeholder="Takip no (isteğe bağlı)" className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm" />
               <textarea name="admin_note" defaultValue={order.admin_note} placeholder="İç not" className="w-full rounded-2xl border border-ink-200 px-4 py-3 text-sm" />
               <button type="submit" className="w-full rounded-full bg-ink-900 py-3 text-sm font-bold text-white">
                 Siparişi güncelle

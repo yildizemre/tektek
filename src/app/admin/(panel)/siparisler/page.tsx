@@ -3,7 +3,8 @@ import { Search } from "lucide-react";
 
 import { formatDate, formatPrice } from "@/lib/format";
 import { listOrders } from "@/lib/queries";
-import { ORDER_STATUS_LABELS, PAYMENT_STATUS_LABELS, type OrderStatus } from "@/lib/types";
+import { canShip, ShipButton } from "@/components/admin/ship-button";
+import { ORDER_STATUS_LABELS, orderStatusLabel, orderStatusTone, paymentStatusLabel } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Siparişler" };
@@ -69,38 +70,40 @@ export default async function AdminOrdersPage({
       <div className="overflow-hidden rounded-3xl border border-ink-100 bg-white">
         <div className="divide-y divide-ink-50">
           {orders.map((order) => (
-            <Link
-              key={order.id}
-              href={`/admin/siparisler/${order.id}`}
-              className="flex flex-wrap items-center gap-4 px-4 py-3 hover:bg-ink-50"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold">{order.code}</p>
-                <p className="truncate text-xs text-ink-400">
-                  {order.customer_name} · {order.email}
-                </p>
-              </div>
+            <div key={order.id} className="flex flex-wrap items-center gap-3 px-4 py-3 hover:bg-ink-50">
+              <Link href={`/admin/siparisler/${order.id}`} className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold">{order.code}</p>
+                  <p className="truncate text-xs text-ink-400">
+                    {order.customer_name} · {order.email}
+                  </p>
+                </div>
 
-              <span className="hidden text-xs text-ink-400 sm:block">{formatDate(order.created_at)}</span>
+                <span className="hidden text-xs text-ink-400 sm:block">{formatDate(order.created_at)}</span>
 
-              <span
-                className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                  order.payment_status === "paid"
-                    ? "bg-emerald-50 text-emerald-700"
-                    : order.payment_status === "failed"
-                      ? "bg-red-50 text-red-600"
-                      : "bg-amber-50 text-amber-700"
-                }`}
-              >
-                {PAYMENT_STATUS_LABELS[order.payment_status] ?? order.payment_status}
-              </span>
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                    order.payment_status === "paid"
+                      ? "bg-emerald-50 text-emerald-700"
+                      : order.payment_status === "failed"
+                        ? "bg-red-50 text-red-600"
+                        : order.payment_method === "cod"
+                          ? "bg-sky-50 text-sky-700"
+                          : "bg-amber-50 text-amber-700"
+                  }`}
+                >
+                  {paymentStatusLabel(order)}
+                </span>
 
-              <span className="rounded-full bg-ink-100 px-2.5 py-1 text-[11px] font-semibold text-ink-600">
-                {ORDER_STATUS_LABELS[order.status as OrderStatus] ?? order.status}
-              </span>
+                <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${orderStatusTone(order)}`}>
+                  {orderStatusLabel(order)}
+                </span>
 
-              <span className="w-24 text-right text-sm font-bold">{formatPrice(order.total)}</span>
-            </Link>
+                <span className="w-24 text-right text-sm font-bold">{formatPrice(order.total)}</span>
+              </Link>
+
+              {canShip(order) && <ShipButton id={order.id} />}
+            </div>
           ))}
 
           {orders.length === 0 && (

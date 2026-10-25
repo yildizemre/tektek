@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { formatDate, formatPrice } from "@/lib/format";
 import { getOrdersForUser } from "@/lib/queries";
-import { ORDER_STATUS_LABELS, ORDER_STATUS_TONES } from "@/lib/types";
+import { orderStatusLabel, orderStatusTone } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Siparişlerim" };
@@ -33,8 +33,8 @@ export default async function AccountOrdersPage() {
                 <p className="font-bold">{order.code}</p>
                 <p className="text-xs text-ink-400">{formatDate(order.created_at)}</p>
               </div>
-              <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${ORDER_STATUS_TONES[order.status]}`}>
-                {ORDER_STATUS_LABELS[order.status]}
+              <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${orderStatusTone(order)}`}>
+                {orderStatusLabel(order, "customer")}
               </span>
               <span className="text-sm font-bold">{formatPrice(order.total)}</span>
             </Link>

@@ -1,5 +1,7 @@
 import { deleteReviewAction, submitReviewAction } from "@/app/admin/actions";
 import { DeleteButton } from "@/components/admin/delete-button";
+import { GalleryUpload } from "@/components/admin/image-upload";
+import { reviewPhotos } from "@/lib/format";
 import { getProducts, listReviews } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
@@ -23,6 +25,9 @@ export default async function AdminReviewsPage() {
         <input name="title" placeholder="Başlık" className={FIELD} />
         <input name="rating" type="number" min="1" max="5" defaultValue="5" className={FIELD} />
         <textarea name="body" rows={3} placeholder="Yorum" className={`${FIELD} md:col-span-2`} />
+        <div className="md:col-span-2">
+          <GalleryUpload name="images" label="Yorum fotoğrafları" />
+        </div>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="is_approved" defaultChecked /> Onaylı</label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="is_featured" /> Anasayfada göster</label>
         <button className="rounded-full bg-ink-900 px-5 py-2.5 text-sm font-bold text-white md:col-span-2">Yorum ekle</button>
@@ -36,6 +41,14 @@ export default async function AdminReviewsPage() {
               <p className="text-xs text-ink-400">{review.product_name}</p>
               <p className="mt-1 text-sm">{review.title}</p>
               <p className="text-sm text-ink-500">{review.body}</p>
+              {reviewPhotos(review).length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {reviewPhotos(review).map((src) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={src} src={src} alt="" className="size-14 rounded-xl object-cover" />
+                  ))}
+                </div>
+              )}
             </div>
             <DeleteButton id={review.id} action={deleteReviewAction} confirmText="Yorum silinsin mi?" />
           </div>

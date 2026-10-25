@@ -128,3 +128,11 @@ export function evaluateCoupon(
 export function round(value: number): number {
   return Math.round((Number(value) + Number.EPSILON) * 100) / 100;
 }
+
+/** "Peşin fiyatına taksit" seçenekleri: ayar boşsa 2,3,6,9. Her zaman artan, tekrarsız, 2–12 arası. */
+export function installmentOptions(setting: string | undefined): number[] {
+  const raw = setting === undefined || setting.trim() === "" ? "2,3,6,9" : setting;
+  return [...new Set(raw.split(",").map((item) => Math.floor(Number(item.trim()))))]
+    .filter((value) => value >= 2 && value <= 12)
+    .sort((a, b) => a - b);
+}

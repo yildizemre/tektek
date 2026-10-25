@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 
 import { getSession } from "@/lib/auth";
 import { initCheckoutForm, isIyzicoConfigured } from "@/lib/iyzico";
-import { activeCampaigns, evaluateCoupon, priceProduct, tierUnitPrice } from "@/lib/pricing";
+import { sendNewOrderEmail } from "@/lib/mailer";
+import { activeCampaigns, evaluateCoupon, installmentOptions, priceProduct, tierUnitPrice } from "@/lib/pricing";
 import {
   createOrder,
   generateOrderCode,
@@ -143,6 +144,7 @@ export async function POST(request: Request) {
   );
 
   if (cashOnDelivery || !isIyzicoConfigured()) {
+    await sendNewOrderEmail(order, orderItems);
     return NextResponse.json({ ok: true, mode: "manual", redirectUrl: `/siparis/${order.code}` });
   }
 
@@ -150,6 +152,7 @@ export async function POST(request: Request) {
     order,
     orderItems.map((item, index) => ({ ...item, id: index, order_id: order.id })),
     `${baseUrlFrom(request)}/api/iyzico/callback`,
+    installmentOptions(settings.installment_options),
   );
 
   if (!result.ok || !result.paymentPageUrl) {

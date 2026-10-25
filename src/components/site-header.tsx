@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   ChevronDown,
   ChevronRight,
@@ -50,6 +51,16 @@ export function SiteHeader({
   const [openMenu, setOpenMenu] = useState<number | null>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Sayfa değişince açık kalan menüleri kapat (kategoriye girip çıkınca menü asılı kalıyordu).
+  const [lastPath, setLastPath] = useState(pathname);
+  if (lastPath !== pathname) {
+    setLastPath(pathname);
+    setOpenMenu(null);
+    setMobileOpen(false);
+    setSearchOpen(false);
+  }
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
@@ -198,14 +209,15 @@ export function SiteHeader({
         onMouseLeave={hoverClose}
         onMouseEnter={() => closeTimer.current && clearTimeout(closeTimer.current)}
       >
-        <div className="container-page flex items-center gap-1 overflow-x-auto py-1 text-sm font-semibold no-scrollbar">
+        <div className="container-page flex flex-wrap items-center justify-center gap-x-0.5 gap-y-0 py-1 text-[13px] font-semibold xl:text-sm">
           {categories.map((category) => (
             <Link
               key={category.id}
               href={`/kategori/${category.slug}`}
               onMouseEnter={() => hoverOpen(category.id)}
               onFocus={() => hoverOpen(category.id)}
-              className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-2 transition ${
+              onClick={() => setOpenMenu(null)}
+              className={`flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1.5 transition xl:px-3 xl:py-2 ${
                 openMenu === category.id ? "bg-ink-900/5" : "opacity-85 hover:opacity-100"
               }`}
             >
@@ -265,13 +277,14 @@ export function SiteHeader({
         )}
       </nav>
 
-      {mobileOpen && (
+      {mobileOpen && typeof document !== "undefined" && createPortal(
         <MobileMenu
           categories={categories}
           session={session}
           supportPhone={supportPhone}
           onClose={() => setMobileOpen(false)}
-        />
+        />,
+        document.body,
       )}
     </header>
   );
@@ -291,7 +304,7 @@ function MobileMenu({
   const [expanded, setExpanded] = useState<number | null>(null);
 
   return (
-    <div className="fixed inset-0 z-50 lg:hidden">
+    <div className="fixed inset-0 z-[60] lg:hidden">
       <button
         type="button"
         aria-label="Kapat"

@@ -4,7 +4,7 @@ import { ImagePlus, Loader2, Trash2, UploadCloud } from "lucide-react";
 import Image from "next/image";
 import { useId, useRef, useState } from "react";
 
-const MAX_EDGE = 2000;
+const MAX_EDGE = 1600;
 
 /** Downscales in the browser so uploads stay small enough for the database. */
 async function compress(file: File): Promise<Blob> {
@@ -27,7 +27,7 @@ async function compress(file: File): Promise<Blob> {
   context.drawImage(bitmap, 0, 0, width, height);
 
   const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, "image/webp", 0.92),
+    canvas.toBlob(resolve, "image/webp", 0.85),
   );
 
   return blob && blob.size < file.size ? blob : file;

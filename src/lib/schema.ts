@@ -279,4 +279,6 @@ export const MIGRATION_STATEMENTS: string[] = [
   `ALTER TABLE reviews ADD COLUMN image_url TEXT DEFAULT ''`,
   `ALTER TABLE reviews ADD COLUMN is_approved INTEGER NOT NULL DEFAULT 1`,
   `ALTER TABLE admin_users ADD COLUMN role TEXT NOT NULL DEFAULT 'owner'`,
+  `ALTER TABLE products ADD COLUMN video_url TEXT DEFAULT ''`,
+  `ALTER TABLE reviews ADD COLUMN images TEXT DEFAULT '[]'`,
 ];

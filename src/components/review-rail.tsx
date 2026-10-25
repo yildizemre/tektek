@@ -1,6 +1,9 @@
 import { Star } from "lucide-react";
 
+import { reviewPhotos } from "@/lib/format";
 import type { Review } from "@/lib/types";
+
+import { Media } from "./media";
 
 import { Rail } from "./rail";
 
@@ -27,6 +30,15 @@ export function ReviewRail({ reviews, title }: { reviews: Review[]; title?: stri
 
           <p className="text-sm font-bold">{review.title}</p>
           <blockquote className="text-sm leading-relaxed text-ink-500">{review.body}</blockquote>
+          {reviewPhotos(review).length > 0 && (
+            <div className="mt-auto flex gap-2">
+              {reviewPhotos(review).slice(0, 3).map((src) => (
+                <div key={src} className="size-16 overflow-hidden rounded-xl bg-white">
+                  <Media src={src} alt={`${review.author} fotoğrafı`} sizes="64px" />
+                </div>
+              ))}
+            </div>
+          )}
         </figure>
       ))}
     </Rail>

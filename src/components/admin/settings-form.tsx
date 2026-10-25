@@ -112,6 +112,14 @@ export function SettingsForm({ settings }: { settings: Record<string, string> })
           </label>
         </Box>
 
+        <Box title="Taksit">
+          <Field name="installment_options" label="Peşin fiyatına taksit seçenekleri (virgülle, örn. 2,3,6,9)" settings={settings} />
+          <p className="text-xs text-ink-400">
+            Ürün sayfasında &quot;Peşin fiyatına taksit&quot; olarak gösterilir ve iyzico ödeme ekranında bu taksitler açılır.
+            Vade farkını müşteriye yansıtmamak için iyzico panelinden de bu taksitlerin komisyonunu üstlenmeyi açmalısın.
+          </p>
+        </Box>
+
         <Box title="Sosyal medya">
           <Field name="social_instagram" label="Instagram" settings={settings} />
           <Field name="social_youtube" label="YouTube" settings={settings} />

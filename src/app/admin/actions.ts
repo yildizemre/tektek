@@ -33,9 +33,11 @@ import {
   saveSlide,
   setUserActive,
   updateOrderAdminFields,
+  updateOrderStatus,
   updateSettings,
   replaceTiers,
   replaceVariants,
+  setProductVideo,
 } from "@/lib/queries";
 
 export type FormState = { error?: string; success?: string };
@@ -153,6 +155,7 @@ export async function saveProductAction(prevOrData: FormState | FormData, maybeD
       }))
       .filter((variant) => variant.name);
 
+    await setProductVideo(productId, text(data, "video_url"));
     await replaceVariants(productId, variants);
 
     const tierQty = data.getAll("tier_qty").map(String);
@@ -237,6 +240,16 @@ export async function updateOrderAction(data: FormData) {
   revalidatePath("/admin/siparisler");
 }
 
+/** Tek tıkla "Kargoya verildi": takip no / kargo firması girmek gerekmez. */
+export async function markOrderShippedAction(data: FormData) {
+  await requireAdmin();
+  const id = Number(data.get("id"));
+  await updateOrderStatus(id, "shipped");
+  revalidatePath(`/admin/siparisler/${id}`);
+  revalidatePath("/admin/siparisler");
+  revalidatePath("/admin");
+}
+
 export async function deleteOrderAction(data: FormData) {
   await requireAdmin();
   await deleteOrder(Number(data.get("id")));
@@ -271,6 +284,20 @@ export async function saveSettingsAction(prevOrData: FormState | FormData, maybe
   return { success: "Ayarlar kaydedildi." };
 }
 
+/** Yorum fotoğrafları: galeri JSON'u + eski tek görsel alanı (ilk foto) birlikte tutulur. */
+function reviewImages(data: FormData) {
+  let list: string[] = [];
+  try {
+    const parsed = JSON.parse(text(data, "images") || "[]");
+    if (Array.isArray(parsed)) list = parsed.map(String).filter(Boolean);
+  } catch {
+    list = [];
+  }
+  const single = text(data, "image_url");
+  if (single && !list.includes(single)) list.unshift(single);
+  return { image_url: list[0] ?? "", images: JSON.stringify(list) };
+}
+
 export async function saveReviewAction(prevOrData: FormState | FormData, maybeData?: FormData): Promise<FormState> {
   const data = asFormData(prevOrData, maybeData);
   await requireAdmin();
@@ -282,7 +309,7 @@ export async function saveReviewAction(prevOrData: FormState | FormData, maybeDa
     rating: Math.min(5, Math.max(1, Math.floor(number(data, "rating", 5)))),
     title: text(data, "title"),
     body: text(data, "body"),
-    image_url: text(data, "image_url"),
+    ...reviewImages(data),
     is_approved: checkbox(data, "is_approved"),
     is_featured: checkbox(data, "is_featured"),
   });

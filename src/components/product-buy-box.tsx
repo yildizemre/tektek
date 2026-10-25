@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Minus, Plus } from "lucide-react";
+import { Check, CreditCard, Minus, Plus } from "lucide-react";
 
 import { formatPrice } from "@/lib/format";
 import { tierFor, tierUnitPrice } from "@/lib/pricing";
@@ -17,9 +17,11 @@ type Props = {
   stock: number;
   variants: ProductVariant[];
   tiers: ProductTier[];
+  /** Peşin fiyatına taksit seçenekleri (örn. [2,3,6,9]). */
+  installments?: number[];
 };
 
-export function ProductBuyBox({ product, stock, variants, tiers }: Props) {
+export function ProductBuyBox({ product, stock, variants, tiers, installments = [] }: Props) {
   const [quantity, setQuantity] = useState(1);
   const [variantId, setVariantId] = useState<number | null>(variants[0]?.id ?? null);
   const { add } = useCart();
@@ -137,6 +139,28 @@ export function ProductBuyBox({ product, stock, variants, tiers }: Props) {
           {soldOut ? "Stokta yok" : "Stokta var, gönderilmeye hazır"}
         </p>
       </div>
+
+      {installments.length > 0 && (
+        <details className="group rounded-3xl border border-emerald-200 bg-emerald-50/60 px-5 py-4">
+          <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold text-emerald-800">
+            <CreditCard className="size-4 shrink-0" />
+            <span className="flex-1">
+              Peşin fiyatına {installments.at(-1)} taksit · aylık{" "}
+              {formatPrice((finalUnit * quantity) / installments.at(-1)!)}
+            </span>
+            <span className="text-xs font-semibold text-emerald-700 group-open:hidden">Detay</span>
+          </summary>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {installments.map((count) => (
+              <div key={count} className="rounded-2xl bg-white px-3 py-2 text-center">
+                <p className="text-xs font-semibold text-ink-400">{count} taksit</p>
+                <p className="text-sm font-extrabold">{formatPrice((finalUnit * quantity) / count)}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-[11px] text-emerald-800/80">Vade farkı yok, toplam tutar peşin fiyatla aynı.</p>
+        </details>
+      )}
 
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1 rounded-full border border-ink-200 p-1">

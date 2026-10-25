@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { retrieveCheckoutForm } from "@/lib/iyzico";
-import { getOrderByCode, markOrderFailed, markOrderPaid } from "@/lib/queries";
+import { sendNewOrderEmail } from "@/lib/mailer";
+import { getOrderByCode, getOrderItems, markOrderFailed, markOrderPaid } from "@/lib/queries";
 import { baseUrlFrom } from "@/lib/site-url";
 
 export const runtime = "nodejs";
@@ -26,6 +27,9 @@ export async function POST(request: Request) {
 
   if (result.success) {
     await markOrderPaid(order.id, result.paymentId);
+    if (order.payment_status !== "paid") {
+      await sendNewOrderEmail({ ...order, payment_status: "paid" }, await getOrderItems(order.id));
+    }
     return NextResponse.redirect(`${base}/siparis/${order.code}`, 303);
   }
 

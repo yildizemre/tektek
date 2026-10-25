@@ -7,10 +7,12 @@ import { JsonLd } from "@/components/json-ld";
 import { ProductBuyBox } from "@/components/product-buy-box";
 import { ProductCard } from "@/components/product-card";
 import { ProductGallery } from "@/components/product-gallery";
+import { ProductVideo } from "@/components/product-video";
+import { Media } from "@/components/media";
 import { Rail } from "@/components/rail";
-import { parseJsonArray } from "@/lib/format";
+import { parseJsonArray, reviewPhotos } from "@/lib/format";
 import { renderMarkdown } from "@/lib/markdown";
-import { activeCampaigns, priceProduct } from "@/lib/pricing";
+import { activeCampaigns, installmentOptions, priceProduct } from "@/lib/pricing";
 import { getCampaignSet } from "@/lib/set-data";
 import { absoluteUrl } from "@/lib/site";
 import {
@@ -19,6 +21,7 @@ import {
   getProductBySlug,
   getProductCategoryIds,
   getProductReviews,
+  getSettings,
   getRelatedProducts,
   getTiers,
   getVariants,
@@ -59,7 +62,7 @@ export default async function ProductPage({ params }: PageProps) {
   const product = await getProductBySlug(slug);
   if (!product || !product.is_active) notFound();
 
-  const [category, related, variants, tiers, reviews, campaigns, categoryIds] = await Promise.all([
+  const [category, related, variants, tiers, reviews, campaigns, categoryIds, settings] = await Promise.all([
     product.category_id ? getCategoryById(product.category_id) : null,
     getRelatedProducts(product),
     getVariants(product.id),
@@ -67,6 +70,7 @@ export default async function ProductPage({ params }: PageProps) {
     getProductReviews(product.id),
     getCampaigns(true),
     getProductCategoryIds(product.id),
+    getSettings().catch(() => ({}) as Record<string, string>),
   ]);
 
   const accent = category?.accent ?? "slate";
@@ -131,7 +135,10 @@ export default async function ProductPage({ params }: PageProps) {
       </nav>
 
       <div className="grid gap-10 lg:grid-cols-2">
-        <ProductGallery images={images} alt={product.name} accent={accent} icon={icon} />
+        <div className="min-w-0 space-y-4">
+          <ProductGallery images={images} alt={product.name} accent={accent} icon={icon} />
+          <ProductVideo url={product.video_url} title={product.name} />
+        </div>
 
         <div className="space-y-6">
           {category && (
@@ -160,6 +167,7 @@ export default async function ProductPage({ params }: PageProps) {
             stock={product.stock}
             variants={variants}
             tiers={tiers}
+            installments={installmentOptions(settings.installment_options)}
             product={{
               productId: product.id,
               slug: product.slug,
@@ -234,6 +242,21 @@ export default async function ProductPage({ params }: PageProps) {
                 </div>
                 {review.title && <p className="mt-3 text-sm font-bold">{review.title}</p>}
                 <blockquote className="mt-1 text-sm text-ink-500">{review.body}</blockquote>
+                {reviewPhotos(review).length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {reviewPhotos(review).map((src, index) => (
+                      <a
+                        key={src}
+                        href={src}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="size-20 overflow-hidden rounded-2xl border border-ink-100 bg-white"
+                      >
+                        <Media src={src} alt={`${review.author} yorum fotoğrafı ${index + 1}`} sizes="80px" />
+                      </a>
+                    ))}
+                  </div>
+                )}
               </figure>
             ))}
           </div>

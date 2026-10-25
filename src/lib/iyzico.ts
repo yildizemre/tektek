@@ -71,6 +71,7 @@ export async function initCheckoutForm(
   order: Order,
   items: OrderItem[],
   callbackUrl: string,
+  installments: number[] = [2, 3, 6, 9],
 ): Promise<CheckoutInitResult> {
   const { name, surname } = splitName(order.customer_name);
 
@@ -112,7 +113,7 @@ export async function initCheckoutForm(
     basketId: order.code,
     paymentGroup: "PRODUCT",
     callbackUrl,
-    enabledInstallments: [1, 2, 3, 6, 9],
+    enabledInstallments: [1, ...installments],
     buyer: {
       id: `B${order.id}`,
       name,

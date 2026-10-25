@@ -1,3 +1,4 @@
+import { responsiveImage } from "@/lib/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -105,7 +106,9 @@ export default async function HomePage() {
                 {category.image_url && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={category.image_url}
+                    {...responsiveImage(category.image_url, 1080)}
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    loading="lazy"
                     alt=""
                     className="absolute inset-0 size-full object-cover opacity-25 transition duration-500 group-hover:scale-105"
                   />

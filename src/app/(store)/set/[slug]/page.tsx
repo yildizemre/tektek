@@ -24,6 +24,7 @@ import {
 import { ProductGallery } from "@/components/product-gallery";
 import { SetBuyButton } from "@/components/set-buy-button";
 import { formatPrice } from "@/lib/format";
+import { responsiveImage } from "@/lib/image";
 import { activeCampaigns, priceProduct } from "@/lib/pricing";
 import { getCampaigns, getProductBySlug } from "@/lib/queries";
 import { ensureCampaignSetProducts, getCampaignSet } from "@/lib/sets";
@@ -93,7 +94,7 @@ export default async function SetPage({ params }: PageProps) {
             <ProductGallery images={set.gallery} alt={set.name} accent="#f97316" icon="package" />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={set.banner} alt={set.name} className="w-full rounded-2xl" />
+            <img {...responsiveImage(set.banner, 1920)} sizes="(max-width: 1408px) 100vw, 1344px" alt={set.name} className="w-full rounded-2xl" />
           )}
 
           <div

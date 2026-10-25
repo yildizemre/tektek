@@ -39,6 +39,7 @@ export type Product = {
   sort_order: number;
   seo_title: string;
   seo_description: string;
+  video_url?: string;
   created_at: string;
   category_name?: string | null;
   category_slug?: string | null;
@@ -169,6 +170,7 @@ export type Review = {
   title: string;
   body: string;
   image_url: string;
+  images?: string;
   is_approved: number;
   is_featured: number;
   created_at: string;
@@ -247,7 +249,7 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "Ödeme bekliyor",
   paid: "Ödendi",
   preparing: "Hazırlanıyor",
-  shipped: "Kargoda",
+  shipped: "Kargoya verildi",
   delivered: "Teslim edildi",
   cancelled: "İptal edildi",
   refunded: "İade edildi",
@@ -268,6 +270,26 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   paid: "Başarılı",
   failed: "Başarısız",
 };
+
+type OrderLabelInput = Pick<Order, "status" | "payment_status" | "payment_method">;
+
+/** Kapıda ödemeli bir siparişin "bekleyen" hali ödeme beklemek değildir; kargolanmayı bekler. */
+export function orderStatusLabel(order: OrderLabelInput, audience: "admin" | "customer" = "admin"): string {
+  if (order.status === "pending" && order.payment_method === "cod") {
+    return audience === "customer" ? "Kapıda ödeme siparişiniz alındı" : "Kapıda ödeme";
+  }
+  return ORDER_STATUS_LABELS[order.status] ?? order.status;
+}
+
+export function orderStatusTone(order: OrderLabelInput): string {
+  if (order.status === "pending" && order.payment_method === "cod") return "bg-sky-50 text-sky-700";
+  return ORDER_STATUS_TONES[order.status] ?? "bg-ink-50 text-ink-600";
+}
+
+export function paymentStatusLabel(order: OrderLabelInput): string {
+  if (order.payment_status === "pending" && order.payment_method === "cod") return "Kapıda ödenecek";
+  return PAYMENT_STATUS_LABELS[order.payment_status] ?? order.payment_status;
+}
 
 /** Kapıda nakit ödemede siparişe eklenen kargo hizmet bedeli (TL). */
 export const COD_FEE = 200;

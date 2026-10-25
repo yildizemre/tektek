@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+import { responsiveImage } from "@/lib/image";
 import { CAMPAIGN_SETS } from "@/lib/set-data";
 
 const slides = CAMPAIGN_SETS.map((set) => ({ src: set.banner, alt: set.name, href: `/set/${set.slug}` }));
@@ -27,10 +28,12 @@ export function HeroSlider() {
           <div key={slide.src} className="relative w-full shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={slide.src}
+              {...responsiveImage(slide.src, 1920)}
+              sizes="(max-width: 1408px) 100vw, 1344px"
               alt={slide.alt}
               className="aspect-[1916/821] w-full object-cover"
               loading={i === 0 ? "eager" : "lazy"}
+              fetchPriority={i === 0 ? "high" : undefined}
             />
             {/* Görseldeki "Hemen İncele" butonunun üstüne denk gelen tıklanabilir alan */}
             <Link
