@@ -6,6 +6,7 @@ import { remember } from "./memo";
 import type {
   AdminUser,
   Campaign,
+  CartLead,
   Category,
   CategoryTree,
   Coupon,
@@ -491,7 +492,7 @@ export async function listReviews(): Promise<Review[]> {
   return all<Review>(
     `SELECT r.*, p.name AS product_name, p.slug AS product_slug
      FROM reviews r LEFT JOIN products p ON p.id = r.product_id
-     ORDER BY r.id DESC LIMIT 300`,
+     ORDER BY r.is_approved ASC, r.id DESC LIMIT 300`,
   );
 }
 
@@ -1097,4 +1098,82 @@ export async function deleteMedia(id: number) {
 
 export async function setProductVideo(productId: number, videoUrl: string) {
   await run("UPDATE products SET video_url = ? WHERE id = ?", [videoUrl, productId]);
+}
+
+/* ------------------------------------------------------- kapıda ödeme onayı */
+
+export async function setOrderConfirmation(orderId: number, confirmation: string) {
+  await run("UPDATE orders SET confirmation = ? WHERE id = ?", [confirmation, orderId]);
+}
+
+/* ------------------------------------------------- sepeti terk edenler */
+
+export async function upsertCartLead(input: {
+  token: string;
+  name: string;
+  phone: string;
+  email: string;
+  city: string;
+  items: string;
+  total: number;
+}) {
+  await run(
+    `INSERT INTO cart_leads (token, name, phone, email, city, items, total)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(token) DO UPDATE SET
+       name = excluded.name, phone = excluded.phone, email = excluded.email, city = excluded.city,
+       items = excluded.items, total = excluded.total, updated_at = datetime('now')
+     WHERE cart_leads.status != 'converted'`,
+    [input.token, input.name, input.phone, input.email, input.city, input.items, input.total],
+  );
+}
+
+/** Sipariş tamamlanınca aynı tarayıcının veya aynı telefonun açık kayıtlarını kapatır. */
+export async function convertCartLeads(token: string, phone: string, orderCode: string) {
+  const digits = phone.replace(/\D/g, "").slice(-10);
+  await run(
+    `UPDATE cart_leads SET status = 'converted', order_code = ?, updated_at = datetime('now')
+     WHERE status != 'converted' AND (token = ? OR (? != '' AND substr(replace(replace(replace(phone, ' ', ''), '-', ''), '+', ''), -10) = ?))`,
+    [orderCode, token, digits, digits],
+  );
+}
+
+export async function listCartLeads(status?: string): Promise<CartLead[]> {
+  return status
+    ? all<CartLead>("SELECT * FROM cart_leads WHERE status = ? ORDER BY updated_at DESC LIMIT 300", [status])
+    : all<CartLead>("SELECT * FROM cart_leads ORDER BY updated_at DESC LIMIT 300");
+}
+
+export async function setCartLeadStatus(id: number, status: string) {
+  await run("UPDATE cart_leads SET status = ?, updated_at = datetime('now') WHERE id = ?", [status, id]);
+}
+
+export async function deleteCartLead(id: number) {
+  await run("DELETE FROM cart_leads WHERE id = ?", [id]);
+}
+
+export async function countOpenCartLeads(): Promise<number> {
+  const row = await one<{ total: number }>("SELECT COUNT(*) AS total FROM cart_leads WHERE status = 'open'");
+  return Number(row?.total ?? 0);
+}
+
+export async function setReviewApproved(id: number, approved: boolean) {
+  await run("UPDATE reviews SET is_approved = ? WHERE id = ?", [approved ? 1 : 0, id]);
+  const review = await one<{ product_id: number | null }>("SELECT product_id FROM reviews WHERE id = ?", [id]);
+  if (review?.product_id) await refreshProductRating(review.product_id);
+}
+
+export async function countPendingReviews(): Promise<number> {
+  const row = await one<{ total: number }>("SELECT COUNT(*) AS total FROM reviews WHERE is_approved = 0");
+  return Number(row?.total ?? 0);
+}
+
+export async function getProductSlugs(ids: number[]): Promise<Record<number, string>> {
+  const unique = [...new Set(ids.filter((id) => Number.isFinite(id)))];
+  if (unique.length === 0) return {};
+  const rows = await all<{ id: number; slug: string }>(
+    `SELECT id, slug FROM products WHERE id IN (${unique.map(() => "?").join(",")})`,
+    unique,
+  );
+  return Object.fromEntries(rows.map((row) => [row.id, row.slug]));
 }

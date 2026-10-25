@@ -8,6 +8,7 @@ import { ProductBuyBox } from "@/components/product-buy-box";
 import { ProductCard } from "@/components/product-card";
 import { ProductGallery } from "@/components/product-gallery";
 import { ProductVideo } from "@/components/product-video";
+import { ReviewForm } from "@/components/review-form";
 import { Media } from "@/components/media";
 import { Rail } from "@/components/rail";
 import { parseJsonArray, reviewPhotos } from "@/lib/format";
@@ -220,7 +221,12 @@ export default async function ProductPage({ params }: PageProps) {
       </section>
 
       <section className="space-y-5">
-        <h2 className="text-2xl font-extrabold tracking-tight">Müşteri Değerlendirmeleri</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-2xl font-extrabold tracking-tight">Müşteri Değerlendirmeleri</h2>
+          <a href="#yorum-yap" className="rounded-full border border-ink-200 px-4 py-2 text-sm font-semibold hover:bg-ink-50">
+            Fotoğraflı yorum yap
+          </a>
+        </div>
         {reviews.length === 0 ? (
           <p className="text-sm text-ink-400">Bu ürün için henüz yorum yok.</p>
         ) : (
@@ -261,6 +267,7 @@ export default async function ProductPage({ params }: PageProps) {
             ))}
           </div>
         )}
+        <ReviewForm productId={product.id} />
       </section>
 
       {related.length > 0 && (

@@ -242,6 +242,21 @@ export const SCHEMA_STATEMENTS: string[] = [
     email TEXT NOT NULL UNIQUE,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   )`,
+
+  `CREATE TABLE IF NOT EXISTS cart_leads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    token TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL DEFAULT '',
+    phone TEXT NOT NULL DEFAULT '',
+    email TEXT NOT NULL DEFAULT '',
+    city TEXT NOT NULL DEFAULT '',
+    items TEXT NOT NULL DEFAULT '[]',
+    total REAL NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'open',
+    order_code TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
 ];
 
 export const INDEX_STATEMENTS: string[] = [
@@ -253,6 +268,7 @@ export const INDEX_STATEMENTS: string[] = [
   `CREATE INDEX IF NOT EXISTS idx_tiers_product ON product_tiers(product_id)`,
   `CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id)`,
   `CREATE INDEX IF NOT EXISTS idx_visits_day ON visits(day)`,
+  `CREATE INDEX IF NOT EXISTS idx_cart_leads_status ON cart_leads(status)`,
 ];
 
 /**
@@ -281,4 +297,6 @@ export const MIGRATION_STATEMENTS: string[] = [
   `ALTER TABLE admin_users ADD COLUMN role TEXT NOT NULL DEFAULT 'owner'`,
   `ALTER TABLE products ADD COLUMN video_url TEXT DEFAULT ''`,
   `ALTER TABLE reviews ADD COLUMN images TEXT DEFAULT '[]'`,
+  /** Kapıda ödeme onayı: "" (gerekmez) · pending · confirmed · rejected */
+  `ALTER TABLE orders ADD COLUMN confirmation TEXT DEFAULT ''`,
 ];

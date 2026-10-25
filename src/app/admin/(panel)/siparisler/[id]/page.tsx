@@ -7,6 +7,7 @@ import { DeleteButton } from "@/components/admin/delete-button";
 import { Media } from "@/components/media";
 import { formatDate, formatPrice } from "@/lib/format";
 import { getOrderById, getOrderItems } from "@/lib/queries";
+import { CodConfirm, needsConfirmation } from "@/components/admin/cod-confirm";
 import { canShip, ShipButton } from "@/components/admin/ship-button";
 import { ORDER_STATUS_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS, orderStatusLabel, orderStatusTone, paymentStatusLabel } from "@/lib/types";
 
@@ -108,6 +109,8 @@ export default async function AdminOrderDetailPage({
                 {orderStatusLabel(order)}
               </span>
             </div>
+
+            {needsConfirmation(order) && <CodConfirm order={order} items={items} />}
 
             {canShip(order) && (
               <div className="pt-1">

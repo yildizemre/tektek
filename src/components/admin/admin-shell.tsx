@@ -14,6 +14,7 @@ import {
   Package,
   Palette,
   Settings,
+  ShoppingBasket,
   ShoppingCart,
   Tags,
   Users,
@@ -26,6 +27,7 @@ import type { SessionPayload } from "@/lib/session";
 const NAV = [
   { href: "/admin", label: "Analiz", icon: LayoutDashboard, exact: true },
   { href: "/admin/siparisler", label: "Siparişler", icon: ShoppingCart },
+  { href: "/admin/sepetler", label: "Sepeti terk edenler", icon: ShoppingBasket },
   { href: "/admin/urunler", label: "Ürünler", icon: Package },
   { href: "/admin/kategoriler", label: "Kategoriler", icon: Tags },
   { href: "/admin/kampanyalar", label: "Kampanya & kupon", icon: BadgePercent },

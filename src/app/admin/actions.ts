@@ -34,6 +34,10 @@ import {
   setUserActive,
   updateOrderAdminFields,
   updateOrderStatus,
+  setOrderConfirmation,
+  setReviewApproved,
+  setCartLeadStatus,
+  deleteCartLead,
   updateSettings,
   replaceTiers,
   replaceVariants,
@@ -558,4 +562,46 @@ export async function submitFaqAction(data: FormData): Promise<void> {
 
 export async function submitStaffAction(data: FormData): Promise<void> {
   await createStaffAction(data);
+}
+
+/* ------------------------------------------------------- kapıda ödeme onayı */
+
+export async function confirmOrderAction(data: FormData) {
+  await requireAdmin();
+  const id = Number(data.get("id"));
+  await setOrderConfirmation(id, "confirmed");
+  revalidatePath(`/admin/siparisler/${id}`);
+  revalidatePath("/admin/siparisler");
+}
+
+/** Müşteri onaylamadı / ulaşılamadı: sipariş iptal edilir. */
+export async function rejectOrderAction(data: FormData) {
+  await requireAdmin();
+  const id = Number(data.get("id"));
+  await setOrderConfirmation(id, "rejected");
+  await updateOrderStatus(id, "cancelled");
+  revalidatePath(`/admin/siparisler/${id}`);
+  revalidatePath("/admin/siparisler");
+}
+
+/* ------------------------------------------------- sepeti terk edenler */
+
+export async function setCartLeadStatusAction(data: FormData) {
+  await requireAdmin();
+  const status = String(data.get("status") ?? "open");
+  await setCartLeadStatus(Number(data.get("id")), ["open", "contacted"].includes(status) ? status : "open");
+  revalidatePath("/admin/sepetler");
+}
+
+export async function deleteCartLeadAction(data: FormData) {
+  await requireAdmin();
+  await deleteCartLead(Number(data.get("id")));
+  revalidatePath("/admin/sepetler");
+}
+
+export async function approveReviewAction(data: FormData) {
+  await requireAdmin();
+  await setReviewApproved(Number(data.get("id")), String(data.get("approved") ?? "1") === "1");
+  refreshStore();
+  revalidatePath("/admin/yorumlar");
 }

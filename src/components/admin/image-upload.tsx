@@ -6,14 +6,16 @@ import { useId, useRef, useState } from "react";
 
 const MAX_EDGE = 1600;
 
+type UploadOptions = { endpoint?: string; maxEdge?: number };
+
 /** Downscales in the browser so uploads stay small enough for the database. */
-async function compress(file: File): Promise<Blob> {
+async function compress(file: File, maxEdge = MAX_EDGE): Promise<Blob> {
   if (file.type === "image/svg+xml" || file.type === "image/gif" || file.type === "image/x-icon") {
     return file;
   }
 
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
   const width = Math.round(bitmap.width * scale);
   const height = Math.round(bitmap.height * scale);
 
@@ -33,12 +35,12 @@ async function compress(file: File): Promise<Blob> {
   return blob && blob.size < file.size ? blob : file;
 }
 
-export async function uploadImage(file: File): Promise<string> {
-  const blob = await compress(file);
+export async function uploadImage(file: File, options: UploadOptions = {}): Promise<string> {
+  const blob = await compress(file, options.maxEdge);
   const body = new FormData();
   body.append("file", new File([blob], file.name.replace(/\.\w+$/, "") + ".webp", { type: blob.type }));
 
-  const response = await fetch("/api/admin/upload", { method: "POST", body });
+  const response = await fetch(options.endpoint ?? "/api/admin/upload", { method: "POST", body });
   const data = (await response.json()) as { url?: string; error?: string };
 
   if (!response.ok || !data.url) throw new Error(data.error ?? "Görsel yüklenemedi.");

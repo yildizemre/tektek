@@ -5,7 +5,7 @@ import { CheckCircle2, Clock, Landmark, Package } from "lucide-react";
 import { ClearCart } from "@/components/clear-cart";
 import { Media } from "@/components/media";
 import { formatDate, formatPrice } from "@/lib/format";
-import { getOrderByCode, getOrderItems, getSettings } from "@/lib/queries";
+import { getOrderByCode, getOrderItems, getProductSlugs, getSettings } from "@/lib/queries";
 import { orderStatusLabel, PAYMENT_METHOD_LABELS } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +19,8 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
   const [items, settings] = await Promise.all([getOrderItems(order.id), getSettings()]);
   const paid = order.payment_status === "paid";
   const cod = order.payment_method === "cod";
+  const canReview = order.status === "shipped" || order.status === "delivered";
+  const slugs = canReview ? await getProductSlugs(items.map((item) => Number(item.product_id))) : {};
 
   return (
     <div className="container-page max-w-3xl space-y-8 py-12">
@@ -82,6 +84,14 @@ export default async function OrderPage({ params }: { params: Promise<{ code: st
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-2 text-sm font-semibold">{item.name}</p>
                 <p className="text-xs text-ink-400">{item.quantity} adet × {formatPrice(item.price)}</p>
+                {canReview && item.product_id && slugs[item.product_id] && (
+                  <Link
+                    href={`/urun/${slugs[item.product_id]}#yorum-yap`}
+                    className="mt-1 inline-block text-xs font-bold text-primary underline underline-offset-2"
+                  >
+                    Fotoğraflı yorum yap
+                  </Link>
+                )}
               </div>
               <span className="text-sm font-bold">{formatPrice(item.price * item.quantity)}</span>
             </div>

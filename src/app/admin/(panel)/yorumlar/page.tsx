@@ -1,4 +1,4 @@
-import { deleteReviewAction, submitReviewAction } from "@/app/admin/actions";
+import { approveReviewAction, deleteReviewAction, submitReviewAction } from "@/app/admin/actions";
 import { DeleteButton } from "@/components/admin/delete-button";
 import { GalleryUpload } from "@/components/admin/image-upload";
 import { reviewPhotos } from "@/lib/format";
@@ -35,21 +35,39 @@ export default async function AdminReviewsPage() {
 
       <div className="divide-y divide-ink-50 overflow-hidden rounded-3xl border border-ink-100 bg-white">
         {reviews.map((review) => (
-          <div key={review.id} className="flex items-start gap-3 px-5 py-4">
+          <div key={review.id} className={`flex items-start gap-3 px-5 py-4 ${review.is_approved ? "" : "bg-amber-50/60"}`}>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold">{review.author} · {review.rating}/5</p>
+              <p className="flex flex-wrap items-center gap-2 text-sm font-bold">
+                {review.author} · {review.rating}/5
+                {!review.is_approved && (
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">Onay bekliyor</span>
+                )}
+              </p>
               <p className="text-xs text-ink-400">{review.product_name}</p>
               <p className="mt-1 text-sm">{review.title}</p>
               <p className="text-sm text-ink-500">{review.body}</p>
               {reviewPhotos(review).length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {reviewPhotos(review).map((src) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={src} src={src} alt="" className="size-14 rounded-xl object-cover" />
+                    <a key={src} href={src} target="_blank" rel="noreferrer">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt="" className="size-14 rounded-xl object-cover" />
+                    </a>
                   ))}
                 </div>
               )}
             </div>
+            <form action={approveReviewAction}>
+              <input type="hidden" name="id" value={review.id} />
+              <input type="hidden" name="approved" value={review.is_approved ? "0" : "1"} />
+              <button
+                className={`rounded-full px-3 py-1.5 text-xs font-bold ${
+                  review.is_approved ? "border border-ink-200 text-ink-500 hover:bg-ink-50" : "bg-emerald-600 text-white hover:bg-emerald-700"
+                }`}
+              >
+                {review.is_approved ? "Gizle" : "Onayla"}
+              </button>
+            </form>
             <DeleteButton id={review.id} action={deleteReviewAction} confirmText="Yorum silinsin mi?" />
           </div>
         ))}

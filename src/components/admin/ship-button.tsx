@@ -3,11 +3,13 @@ import { Truck } from "lucide-react";
 import { markOrderShippedAction } from "@/app/admin/actions";
 import type { Order } from "@/lib/types";
 
-/** Kargoya verilebilir mi? Ödenmiş, hazırlanan veya kapıda ödemeli bekleyen siparişler. */
-export function canShip(order: Pick<Order, "status" | "payment_status" | "payment_method">) {
+/** Kargoya verilebilir mi? Ödenmiş, hazırlanan veya onaylanmış kapıda ödemeli siparişler. */
+export function canShip(order: Pick<Order, "status" | "payment_status" | "payment_method" | "confirmation">) {
   if (order.status === "paid" || order.status === "preparing") return true;
-  if (order.status === "pending") return order.payment_method === "cod" || order.payment_status === "paid";
-  return false;
+  if (order.status !== "pending") return false;
+  if (order.payment_status === "paid") return true;
+  // Kapıda ödemede önce müşteriyle telefonda onaylaşılır.
+  return order.payment_method === "cod" && order.confirmation !== "pending" && order.confirmation !== "rejected";
 }
 
 export function ShipButton({ id, block = false }: { id: number; block?: boolean }) {

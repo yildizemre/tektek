@@ -11,7 +11,8 @@ declare global {
 }
 
 /** Bump when new tables/columns are added so a running `next dev` re-applies schema. */
-const SCHEMA_VERSION = 4;
+/** Şemaya tablo / sütun eklendiğinde artırın; kurulu veritabanları açılışta otomatik güncellenir. */
+const SCHEMA_VERSION = 5;
 
 const DATA_DIR = path.join(process.cwd(), "data");
 
@@ -59,7 +60,16 @@ export async function db(): Promise<Client> {
     const client = await createDbClient();
 
     const ready = await client.execute("SELECT 1 AS ok FROM settings LIMIT 1").catch(() => null);
-    if (ready?.rows?.length) return client;
+    if (ready?.rows?.length) {
+      // Kurulu veritabanı: şema sürümü değiştiyse yeni tablo / sütunları ekle (hepsi tekrar çalıştırılabilir).
+      const stored = await client
+        .execute("SELECT value FROM settings WHERE key = 'schema_version'")
+        .catch(() => null);
+      if (String(stored?.rows?.[0]?.value ?? "") !== String(SCHEMA_VERSION)) {
+        await upgradeSchema(client);
+      }
+      return client;
+    }
 
     if (typeof client.batch === "function") {
       await client.batch(
@@ -81,11 +91,34 @@ export async function db(): Promise<Client> {
 
     const populated = await client.execute("SELECT 1 AS ok FROM settings LIMIT 1").catch(() => null);
     if (!populated?.rows?.length) await seedDatabase(client);
+    await markSchemaVersion(client);
 
     return client;
   })();
 
   return globalThis.__storeDb;
+}
+
+async function upgradeSchema(client: Client) {
+  for (const statement of SCHEMA_STATEMENTS) {
+    await client.execute(statement).catch(() => undefined);
+  }
+  for (const statement of MIGRATION_STATEMENTS) {
+    await client.execute(statement).catch(() => undefined);
+  }
+  for (const statement of INDEX_STATEMENTS) {
+    await client.execute(statement).catch(() => undefined);
+  }
+  await markSchemaVersion(client);
+}
+
+async function markSchemaVersion(client: Client) {
+  await client
+    .execute({
+      sql: "INSERT INTO settings (key, value) VALUES ('schema_version', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+      args: [String(SCHEMA_VERSION)],
+    })
+    .catch(() => undefined);
 }
 
 function asPlain<T>(rows: unknown[]): T[] {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertCircle, Banknote, CreditCard, Loader2, Lock, ShoppingBag } from "lucide-react";
 
 import { TR_CITIES } from "@/lib/cities";
@@ -28,6 +28,37 @@ export function CheckoutForm({
   const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">("online");
   const cod = paymentMethod === "cod";
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+  const leadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (leadTimer.current) clearTimeout(leadTimer.current);
+  }, []);
+
+  /** Telefon yazıldıysa sepeti "terk edilen sepet" olarak kaydet (sipariş tamamlanınca kapanır). */
+  function saveLead() {
+    if (leadTimer.current) clearTimeout(leadTimer.current);
+    leadTimer.current = setTimeout(() => {
+      const form = formRef.current;
+      if (!form) return;
+      const data = new FormData(form);
+      const phone = String(data.get("phone") ?? "");
+      if (phone.replace(/D/g, "").length < 10 || lines.length === 0) return;
+      void fetch("/api/cart-lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        keepalive: true,
+        body: JSON.stringify({
+          token: leadToken(),
+          name: data.get("name"),
+          phone,
+          email: data.get("email"),
+          city: data.get("city"),
+          items: lines.map((line) => ({ name: line.name, quantity: line.quantity, price: line.price, slug: line.slug })),
+        }),
+      }).catch(() => {});
+    }, 800);
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,6 +85,7 @@ export function CheckoutForm({
       })),
       couponCode: String(data.get("couponCode") ?? ""),
       paymentMethod,
+      leadToken: leadToken(),
     };
 
     try {
@@ -108,7 +140,12 @@ export function CheckoutForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="container-page grid gap-8 py-10 lg:grid-cols-[1fr_380px]">
+    <form
+      ref={formRef}
+      onSubmit={handleSubmit}
+      onChange={saveLead}
+      className="container-page grid gap-8 py-10 lg:grid-cols-[1fr_380px]"
+    >
       <div className="space-y-6">
         <h1 className="text-3xl font-extrabold tracking-tight">Ödeme</h1>
 
@@ -283,4 +320,18 @@ export function CheckoutForm({
       </aside>
     </form>
   );
+}
+
+/** Bu tarayıcıya ait sabit sepet kimliği; aynı ziyaretçinin kaydı güncellenir, çoğalmaz. */
+function leadToken(): string {
+  const key = "tt_lead_token";
+  try {
+    const existing = localStorage.getItem(key);
+    if (existing) return existing;
+    const created = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+    localStorage.setItem(key, created);
+    return created;
+  } catch {
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  }
 }

@@ -5,6 +5,7 @@ import { initCheckoutForm, isIyzicoConfigured } from "@/lib/iyzico";
 import { sendNewOrderEmail } from "@/lib/mailer";
 import { activeCampaigns, evaluateCoupon, installmentOptions, priceProduct, tierUnitPrice } from "@/lib/pricing";
 import {
+  convertCartLeads,
   createOrder,
   generateOrderCode,
   getCampaigns,
@@ -14,6 +15,7 @@ import {
   getSettings,
   getTiers,
   getVariants,
+  setOrderConfirmation,
 } from "@/lib/queries";
 import { baseUrlFrom } from "@/lib/site-url";
 import { COD_FEE } from "@/lib/types";
@@ -39,6 +41,8 @@ type CheckoutBody = {
   couponCode?: string;
   /** "cod" = kapıda nakit ödeme; boş/diğer = online (iyzico veya havale). */
   paymentMethod?: string;
+  /** Ödeme sayfasındaki terk edilen sepet kaydının kimliği. */
+  leadToken?: string;
 };
 
 export async function POST(request: Request) {
@@ -143,7 +147,13 @@ export async function POST(request: Request) {
     orderItems,
   );
 
+  if (cashOnDelivery) {
+    await setOrderConfirmation(order.id, "pending");
+    order.confirmation = "pending";
+  }
+
   if (cashOnDelivery || !isIyzicoConfigured()) {
+    await convertCartLeads(String(body.leadToken ?? "").slice(0, 64), order.phone, order.code).catch(() => {});
     await sendNewOrderEmail(order, orderItems);
     return NextResponse.json({ ok: true, mode: "manual", redirectUrl: `/siparis/${order.code}` });
   }

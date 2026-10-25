@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 
 import { formatDate, formatPrice } from "@/lib/format";
 import { listOrders } from "@/lib/queries";
+import { CodConfirm, needsConfirmation } from "@/components/admin/cod-confirm";
 import { canShip, ShipButton } from "@/components/admin/ship-button";
 import { ORDER_STATUS_LABELS, orderStatusLabel, orderStatusTone, paymentStatusLabel } from "@/lib/types";
 
@@ -11,6 +12,7 @@ export const metadata = { title: "Siparişler" };
 
 const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: "", label: "Tümü" },
+  { value: "onay", label: "Onay bekleyen (kapıda)" },
   ...Object.entries(ORDER_STATUS_LABELS).map(([value, label]) => ({ value, label })),
 ];
 
@@ -23,7 +25,8 @@ export default async function AdminOrdersPage({
   const status = typeof query.durum === "string" ? query.durum : "";
   const term = typeof query.q === "string" ? query.q.trim() : "";
 
-  const orders = await listOrders({ status: status || undefined, search: term || undefined });
+  const all = await listOrders({ status: status && status !== "onay" ? status : undefined, search: term || undefined });
+  const orders = status === "onay" ? all.filter(needsConfirmation) : all;
 
   return (
     <div className="space-y-6">
@@ -102,6 +105,7 @@ export default async function AdminOrdersPage({
                 <span className="w-24 text-right text-sm font-bold">{formatPrice(order.total)}</span>
               </Link>
 
+              {needsConfirmation(order) && <CodConfirm order={order} items={[]} compact />}
               {canShip(order) && <ShipButton id={order.id} />}
             </div>
           ))}

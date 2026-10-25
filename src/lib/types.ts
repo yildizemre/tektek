@@ -146,6 +146,8 @@ export type Order = {
   tracking_number: string;
   carrier: string;
   admin_note: string;
+  /** Kapıda ödeme onayı: "" · pending · confirmed · rejected */
+  confirmation?: string;
   created_at: string;
 };
 
@@ -271,18 +273,23 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   failed: "Başarısız",
 };
 
-type OrderLabelInput = Pick<Order, "status" | "payment_status" | "payment_method">;
+type OrderLabelInput = Pick<Order, "status" | "payment_status" | "payment_method" | "confirmation">;
 
 /** Kapıda ödemeli bir siparişin "bekleyen" hali ödeme beklemek değildir; kargolanmayı bekler. */
 export function orderStatusLabel(order: OrderLabelInput, audience: "admin" | "customer" = "admin"): string {
   if (order.status === "pending" && order.payment_method === "cod") {
-    return audience === "customer" ? "Kapıda ödeme siparişiniz alındı" : "Kapıda ödeme";
+    if (audience === "customer") return "Kapıda ödeme siparişiniz alındı";
+    if (order.confirmation === "pending") return "Kapıda ödeme · onay bekliyor";
+    if (order.confirmation === "confirmed") return "Kapıda ödeme · onaylandı";
+    return "Kapıda ödeme";
   }
   return ORDER_STATUS_LABELS[order.status] ?? order.status;
 }
 
 export function orderStatusTone(order: OrderLabelInput): string {
-  if (order.status === "pending" && order.payment_method === "cod") return "bg-sky-50 text-sky-700";
+  if (order.status === "pending" && order.payment_method === "cod") {
+    return order.confirmation === "pending" ? "bg-amber-50 text-amber-700" : "bg-sky-50 text-sky-700";
+  }
   return ORDER_STATUS_TONES[order.status] ?? "bg-ink-50 text-ink-600";
 }
 
@@ -306,3 +313,27 @@ export const MENU_SECTIONS: { key: string; label: string }[] = [
   { key: "footer3", label: "Footer – 3. sütun" },
   { key: "topbar", label: "Üst bar bağlantıları" },
 ];
+
+export type CartLeadItem = { name: string; quantity: number; price: number; slug?: string };
+
+export type CartLead = {
+  id: number;
+  token: string;
+  name: string;
+  phone: string;
+  email: string;
+  city: string;
+  items: string;
+  total: number;
+  /** open · contacted · converted */
+  status: string;
+  order_code: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export const CONFIRMATION_LABELS: Record<string, string> = {
+  pending: "Onay bekliyor",
+  confirmed: "Onaylandı",
+  rejected: "Onaylanmadı",
+};
