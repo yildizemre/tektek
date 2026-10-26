@@ -162,11 +162,11 @@ export function ProductForm({
           <section className="space-y-4 rounded-3xl border border-ink-100 bg-white p-6">
             <h2 className="text-sm font-bold">Fiyat ve stok</h2>
             <label className="block space-y-1.5">
-              <span className={LABEL}>Satış fiyatı *</span>
+              <span className={LABEL}>İndirimli satış fiyatı * (müşterinin ödeyeceği)</span>
               <input name="price" required type="number" step="0.01" defaultValue={product?.price} className={FIELD} />
             </label>
             <label className="block space-y-1.5">
-              <span className={LABEL}>Üstü çizili fiyat</span>
+              <span className={LABEL}>İndirimsiz fiyat (üstü çizili gösterilir)</span>
               <input name="compare_at_price" type="number" step="0.01" defaultValue={product?.compare_at_price ?? ""} className={FIELD} />
             </label>
             <label className="block space-y-1.5">

@@ -31,6 +31,9 @@ export function ProductBuyBox({ product, stock, variants, tiers, installments = 
   const unit = product.price + (variant?.price_diff ?? 0);
   const activeTier = tierFor(tiers, quantity);
   const finalUnit = tierUnitPrice(unit, tiers, quantity);
+  // İndirim öncesi (üstü çizili) fiyat: ürünün liste fiyatı + seçilen rengin fiyat farkı.
+  const listUnit = product.listPrice > product.price ? product.listPrice + (variant?.price_diff ?? 0) : null;
+  const savedPercent = listUnit && listUnit > finalUnit ? Math.round(((listUnit - finalUnit) / listUnit) * 100) : null;
   const soldOut = stock <= 0;
 
   const line = useMemo<Omit<CartLine, "quantity">>(
@@ -96,11 +99,12 @@ export function ProductBuyBox({ product, stock, variants, tiers, installments = 
             >
               <p className="text-xs font-semibold text-ink-400">1 Adet</p>
               <p className="mt-1 text-sm font-extrabold">{formatPrice(unit)}</p>
+              {listUnit && <p className="text-[11px] text-ink-300 line-through">{formatPrice(listUnit)}</p>}
             </button>
 
             {tiers.map((tier) => {
               const price = tierUnitPrice(unit, [tier], tier.quantity) * tier.quantity;
-              const list = unit * tier.quantity;
+              const list = (listUnit ?? unit) * tier.quantity;
               const selected = quantity === tier.quantity;
               return (
                 <button
@@ -128,7 +132,13 @@ export function ProductBuyBox({ product, stock, variants, tiers, installments = 
 
       <div className="flex flex-wrap items-end justify-between gap-3 rounded-3xl bg-ink-50 p-5">
         <div>
-          <p className="text-3xl font-extrabold">{formatPrice(finalUnit)}</p>
+          {savedPercent && listUnit && (
+            <div className="mb-1 flex items-center gap-2">
+              <span className="text-base font-semibold text-ink-300 line-through">{formatPrice(listUnit)}</span>
+              <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">%{savedPercent} indirim</span>
+            </div>
+          )}
+          <p className={`text-3xl font-extrabold ${savedPercent ? "text-red-600" : ""}`}>{formatPrice(finalUnit)}</p>
           {activeTier && (
             <p className="text-xs font-semibold text-emerald-600">
               {activeTier.quantity}. üründen itibaren %{activeTier.discount_percent} indirim uygulandı · Toplam {formatPrice(finalUnit * quantity)}

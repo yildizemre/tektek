@@ -99,10 +99,14 @@ export async function saveProductAction(prevOrData: FormState | FormData, maybeD
   const name = text(data, "name");
   if (!name) return { error: "Ürün adı zorunlu." };
 
-  const price = number(data, "price");
-  if (price <= 0) return { error: "Geçerli bir fiyat girin." };
+  const enteredPrice = number(data, "price");
+  if (enteredPrice <= 0) return { error: "Geçerli bir fiyat girin." };
 
-  const compareAt = number(data, "compare_at_price");
+  // Alanlar ters girildiyse düzelt: düşük olan satış fiyatı, yüksek olan üstü çizili fiyattır.
+  const enteredCompare = number(data, "compare_at_price");
+  const swapped = enteredCompare > 0 && enteredCompare < enteredPrice;
+  const price = swapped ? enteredCompare : enteredPrice;
+  const compareAt = swapped ? enteredPrice : enteredCompare;
   const idValue = text(data, "id");
   const categoryId = nullableId(data, "category_id");
   const extra = data.getAll("extra_category_ids").map((value) => Number(value)).filter(Boolean);

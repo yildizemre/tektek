@@ -13,7 +13,7 @@ import { Media } from "@/components/media";
 import { Rail } from "@/components/rail";
 import { parseJsonArray, reviewPhotos } from "@/lib/format";
 import { renderMarkdown } from "@/lib/markdown";
-import { activeCampaigns, installmentOptions, priceProduct } from "@/lib/pricing";
+import { activeCampaigns, priceProduct } from "@/lib/pricing";
 import { getCampaignSet } from "@/lib/set-data";
 import { absoluteUrl } from "@/lib/site";
 import {
@@ -22,7 +22,6 @@ import {
   getProductBySlug,
   getProductCategoryIds,
   getProductReviews,
-  getSettings,
   getRelatedProducts,
   getTiers,
   getVariants,
@@ -63,7 +62,7 @@ export default async function ProductPage({ params }: PageProps) {
   const product = await getProductBySlug(slug);
   if (!product || !product.is_active) notFound();
 
-  const [category, related, variants, tiers, reviews, campaigns, categoryIds, settings] = await Promise.all([
+  const [category, related, variants, tiers, reviews, campaigns, categoryIds] = await Promise.all([
     product.category_id ? getCategoryById(product.category_id) : null,
     getRelatedProducts(product),
     getVariants(product.id),
@@ -71,7 +70,6 @@ export default async function ProductPage({ params }: PageProps) {
     getProductReviews(product.id),
     getCampaigns(true),
     getProductCategoryIds(product.id),
-    getSettings().catch(() => ({}) as Record<string, string>),
   ]);
 
   const accent = category?.accent ?? "slate";
@@ -168,7 +166,6 @@ export default async function ProductPage({ params }: PageProps) {
             stock={product.stock}
             variants={variants}
             tiers={tiers}
-            installments={installmentOptions(settings.installment_options)}
             product={{
               productId: product.id,
               slug: product.slug,

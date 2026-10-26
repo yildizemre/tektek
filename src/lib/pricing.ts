@@ -48,12 +48,15 @@ export function priceProduct(
   categoryIds: number[] = [],
 ): PricedProduct {
   const campaign = campaignFor(product, campaigns, categoryIds);
-  const base = Number(product.price) || 0;
+  // İki fiyattan düşük olan her zaman satış fiyatıdır: panelde "satış" ve "üstü çizili"
+  // alanları ters girilse bile müşteri indirimli fiyattan satın alır.
+  const entered = Number(product.price) || 0;
+  const compare = Number(product.compare_at_price ?? 0) || 0;
+  const base = compare > 0 && compare < entered ? compare : entered;
+  const original = compare > 0 ? Math.max(entered, compare) : 0;
   const price = campaign ? round(base * (1 - campaign.discount_percent / 100)) : base;
 
-  const listPrice = campaign
-    ? Math.max(base, Number(product.compare_at_price ?? 0))
-    : (product.compare_at_price ?? null);
+  const listPrice = campaign ? Math.max(base, original) : original || null;
 
   const effectiveList = listPrice && listPrice > price ? listPrice : null;
 
