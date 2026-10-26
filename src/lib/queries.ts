@@ -2,6 +2,7 @@ import type { InValue } from "@libsql/client";
 import { cache } from "react";
 
 import { all, one, run } from "./db";
+import { shopDay } from "./format";
 import { remember } from "./memo";
 import type {
   AdminUser,
@@ -917,7 +918,7 @@ export async function deleteFaq(id: number) {
 /* --------------------------------------------------------------- analytics */
 
 export async function recordVisit(path: string, visitor: string) {
-  const day = new Date().toISOString().slice(0, 10);
+  const day = shopDay();
   await run("INSERT INTO visits (day, path, visitor) VALUES (?, ?, ?)", [
     day,
     path.slice(0, 200),
@@ -946,13 +947,11 @@ export type AnalyticsSummary = {
 };
 
 function dayOffset(days: number): string {
-  const date = new Date();
-  date.setDate(date.getDate() - days);
-  return date.toISOString().slice(0, 10);
+  return shopDay(days);
 }
 
 export async function getAnalytics(): Promise<AnalyticsSummary> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = shopDay();
   const since7 = dayOffset(6);
   const since30 = dayOffset(29);
 
@@ -973,7 +972,7 @@ export async function getAnalytics(): Promise<AnalyticsSummary> {
     ),
     one<{ total: number; orders: number }>(
       `SELECT COALESCE(SUM(total), 0) AS total, COUNT(*) AS orders FROM orders
-       WHERE payment_status = 'paid' AND date(created_at) >= ?`,
+       WHERE payment_status = 'paid' AND date(created_at, '+3 hours') >= ?`,
       [since30],
     ),
     one<{ products: number; customers: number; ordersTotal: number; paid: number; pending: number; revenue: number }>(
@@ -991,8 +990,8 @@ export async function getAnalytics(): Promise<AnalyticsSummary> {
       [since30],
     ),
     all<{ day: string; orders: number; revenue: number }>(
-      `SELECT date(created_at) AS day, COUNT(*) AS orders, COALESCE(SUM(total), 0) AS revenue
-       FROM orders WHERE date(created_at) >= ? GROUP BY day ORDER BY day`,
+      `SELECT date(created_at, '+3 hours') AS day, COUNT(*) AS orders, COALESCE(SUM(total), 0) AS revenue
+       FROM orders WHERE date(created_at, '+3 hours') >= ? GROUP BY day ORDER BY day`,
       [since30],
     ),
     all<{ path: string; views: number }>(

@@ -8,10 +8,21 @@ export function formatPrice(value: number): string {
   return currency.format(Number(value ?? 0));
 }
 
+/** Sunucu (Netlify) UTC çalışır; tarihler her zaman Türkiye saatiyle gösterilir. */
+export const SHOP_TIME_ZONE = "Europe/Istanbul";
+
+const dateFormat = new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short", timeZone: SHOP_TIME_ZONE });
+const dayFormat = new Intl.DateTimeFormat("en-CA", { timeZone: SHOP_TIME_ZONE });
+
+/** Türkiye saatine göre bugünün (veya `daysAgo` gün öncesinin) tarihi: YYYY-MM-DD. */
+export function shopDay(daysAgo = 0): string {
+  return dayFormat.format(new Date(Date.now() - daysAgo * 86_400_000));
+}
+
 export function formatDate(value: string): string {
   const date = new Date(value.includes("T") ? value : `${value.replace(" ", "T")}Z`);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("tr-TR", { dateStyle: "medium", timeStyle: "short" }).format(date);
+  return dateFormat.format(date);
 }
 
 export function discountPercent(price: number, compareAt?: number | null): number | null {
