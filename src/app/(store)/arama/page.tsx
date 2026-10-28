@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { SortSelect } from "@/components/sort-select";
 import { categoryStyles } from "@/lib/palette";
-import { countProducts, getAllCategories, getProducts, type ProductFilter } from "@/lib/queries";
+import { countProducts, foldTurkish, getAllCategories, getProducts, type ProductFilter } from "@/lib/queries";
 import type { Category } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -74,12 +74,11 @@ export default async function SearchPage({
 }
 
 function CategoryHits({ categories, term }: { categories: Category[]; term: string }) {
-  const needle = term.toLocaleLowerCase("tr");
+  const needle = foldTurkish(term);
   const hits = categories.filter(
     (category) =>
       category.is_active === 1 &&
-      (category.name.toLocaleLowerCase("tr").includes(needle) ||
-        category.slug.toLocaleLowerCase("tr").includes(needle)),
+      (foldTurkish(category.name).includes(needle) || foldTurkish(category.slug).includes(needle)),
   );
   if (hits.length === 0) return null;
 

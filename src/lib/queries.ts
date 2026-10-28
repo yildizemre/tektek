@@ -183,9 +183,13 @@ async function buildProductWhere(filter: ProductFilter) {
   }
 
   if (filter.search) {
-    clauses.push("(p.name LIKE ? OR p.short_description LIKE ? OR p.sku LIKE ? OR p.brand LIKE ? OR c.name LIKE ?)");
-    const like = `%${filter.search}%`;
-    args.push(like, like, like, like, like);
+    // Her kelime ayrı aranır ("akıllı saat siyah"); Türkçe harfler katlanır: "AKILLI", "akilli", "Akıllı" eşleşir.
+    const words = foldTurkish(filter.search).split(/\s+/).filter(Boolean).slice(0, 6);
+    const fields = ["p.name", "p.short_description", "p.sku", "p.brand", "c.name"].map(foldSql);
+    for (const word of words) {
+      clauses.push(`(${fields.map((field) => `${field} LIKE ?`).join(" OR ")})`);
+      args.push(...fields.map(() => `%${word}%`));
+    }
   }
 
   return { sql: clauses.length ? `WHERE ${clauses.join(" AND ")}` : "", args };
@@ -1175,4 +1179,27 @@ export async function getProductSlugs(ids: number[]): Promise<Record<number, str
     unique,
   );
   return Object.fromEntries(rows.map((row) => [row.id, row.slug]));
+}
+
+/* ------------------------------------------------------------ Türkçe arama */
+
+const TR_FOLD: [string, string][] = [
+  ["İ", "i"], ["I", "i"], ["ı", "i"],
+  ["Ş", "s"], ["ş", "s"],
+  ["Ğ", "g"], ["ğ", "g"],
+  ["Ü", "u"], ["ü", "u"],
+  ["Ö", "o"], ["ö", "o"],
+  ["Ç", "c"], ["ç", "c"],
+];
+
+/** Arama terimini katlar: Türkçe harfler sadeleşir, küçük harfe çevrilir. */
+export function foldTurkish(value: string): string {
+  let text = value;
+  for (const [from, to] of TR_FOLD) text = text.replaceAll(from, to);
+  return text.toLowerCase().trim();
+}
+
+/** Aynı katlamayı SQL tarafında yapar (SQLite lower() yalnızca İngilizce harfleri küçültür). */
+function foldSql(column: string): string {
+  return `lower(${TR_FOLD.reduce((expression, [from, to]) => `replace(${expression}, '${from}', '${to}')`, `COALESCE(${column}, '')`)})`;
 }
