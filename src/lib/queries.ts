@@ -218,7 +218,7 @@ export async function getProducts(filter: ProductFilter = {}): Promise<Product[]
 
 export async function countProducts(filter: ProductFilter = {}): Promise<number> {
   const where = await buildProductWhere(filter);
-  const row = await one<{ c: number }>(`SELECT COUNT(*) AS c FROM products p ${where.sql}`, where.args);
+  const row = await one<{ c: number }>(`SELECT COUNT(*) AS c FROM products p LEFT JOIN categories c ON c.id = p.category_id ${where.sql}`, where.args);
   return Number(row?.c ?? 0);
 }
 
